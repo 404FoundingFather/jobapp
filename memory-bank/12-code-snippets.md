@@ -228,6 +228,354 @@ Use this template structure for organizing content:
 
 ## Frontend Components
 
+### Layout Component (Implemented)
+Main layout component with navigation and routing support
+
+```typescript
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Button } from '../components/ui/button';
+
+interface LayoutProps {
+  children: React.ReactNode;
+}
+
+export default function Layout({ children }: LayoutProps) {
+  const location = useLocation();
+
+  const isActive = (path: string) => {
+    return location.pathname === path;
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4">
+          <nav className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-8">
+              <Link to="/" className="text-xl font-bold text-foreground">
+                JobApp
+              </Link>
+              <div className="hidden md:flex items-center space-x-6">
+                <Link 
+                  to="/" 
+                  className={`text-sm font-medium transition-colors hover:text-primary ${
+                    isActive('/') ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  Dashboard
+                </Link>
+                <Link 
+                  to="/jobs" 
+                  className={`text-sm font-medium transition-colors hover:text-primary ${
+                    isActive('/jobs') ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  Jobs
+                </Link>
+                <Link 
+                  to="/applications" 
+                  className={`text-sm font-medium transition-colors hover:text-primary ${
+                    isActive('/applications') ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  Applications
+                </Link>
+                <Link 
+                  to="/profile" 
+                  className={`text-sm font-medium transition-colors hover:text-primary ${
+                    isActive('/profile') ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  Profile
+                </Link>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Button variant="outline" size="sm">
+                Help
+              </Button>
+              <Button size="sm">
+                Account
+              </Button>
+            </div>
+          </nav>
+        </div>
+      </header>
+      <main>
+        {children}
+      </main>
+    </div>
+  );
+}
+```
+
+### shadcn/ui Button Component (Implemented)
+Reusable button component with variants and sizes
+
+```typescript
+import * as React from 'react';
+import { Slot } from '@radix-ui/react-slot';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '../../lib/utils';
+
+const buttonVariants = cva(
+  'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+  {
+    variants: {
+      variant: {
+        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+        destructive:
+          'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+        outline:
+          'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+        secondary:
+          'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+        ghost: 'hover:bg-accent hover:text-accent-foreground',
+        link: 'text-primary underline-offset-4 hover:underline',
+      },
+      size: {
+        default: 'h-10 px-4 py-2',
+        sm: 'h-9 rounded-md px-3',
+        lg: 'h-11 rounded-md px-8',
+        icon: 'h-10 w-10',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      size: 'default',
+    },
+  }
+);
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
+}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : 'button';
+    return (
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      />
+    );
+  }
+);
+Button.displayName = 'Button';
+
+export { Button, buttonVariants };
+```
+
+### Card Component (Implemented)
+Flexible card component for content containers
+
+```typescript
+import * as React from 'react';
+import { cn } from '../../lib/utils';
+
+const Card = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      'rounded-lg border bg-card text-card-foreground shadow-sm',
+      className
+    )}
+    {...props}
+  />
+));
+Card.displayName = 'Card';
+
+const CardHeader = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn('flex flex-col space-y-1.5 p-6', className)}
+    {...props}
+  />
+));
+CardHeader.displayName = 'CardHeader';
+
+const CardTitle = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLHeadingElement>
+>(({ className, ...props }, ref) => (
+  <h3
+    ref={ref}
+    className={cn(
+      'text-2xl font-semibold leading-none tracking-tight',
+      className
+    )}
+    {...props}
+  />
+));
+CardTitle.displayName = 'CardTitle';
+
+const CardDescription = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(({ className, ...props }, ref) => (
+  <p
+    ref={ref}
+    className={cn('text-sm text-muted-foreground', className)}
+    {...props}
+  />
+));
+CardDescription.displayName = 'CardDescription';
+
+const CardContent = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div ref={ref} className={cn('p-6 pt-0', className)} {...props} />
+));
+CardContent.displayName = 'CardContent';
+
+const CardFooter = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn('flex items-center p-6 pt-0', className)}
+    {...props}
+  />
+));
+CardFooter.displayName = 'CardFooter';
+
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };
+```
+
+### Dashboard Page Component (Implemented)
+Main dashboard page with feature overview cards
+
+```typescript
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+
+export default function Dashboard() {
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-foreground mb-2">
+            Job Application Automation
+          </h1>
+          <p className="text-lg text-muted-foreground">
+            AI-powered job discovery and application assistance
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Job Discovery</CardTitle>
+              <CardDescription>
+                Find relevant jobs across multiple platforms
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Intelligent job search with semantic matching and multi-platform aggregation.
+              </p>
+              <Button className="w-full">Search Jobs</Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Resume Processing</CardTitle>
+              <CardDescription>
+                Tailor your resume for each application
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Dynamic resume optimization based on job requirements.
+              </p>
+              <Button variant="outline" className="w-full">Upload Resume</Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Cover Letters</CardTitle>
+              <CardDescription>
+                AI-generated personalized cover letters
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Personalized content with company research integration.
+              </p>
+              <Button variant="secondary" className="w-full">Generate Letter</Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="mt-12">
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Start</CardTitle>
+              <CardDescription>
+                Get started with your job application automation
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-4">
+                  <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
+                    1
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Set up your profile</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Upload your resume and set job preferences
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
+                    2
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Discover relevant jobs</h3>
+                    <p className="text-sm text-muted-foreground">
+                      AI-powered job matching across multiple platforms
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
+                    3
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Generate application materials</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Tailored resumes and personalized cover letters
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
 ### Job Card Component
 Component for displaying job postings in search results and saved jobs
 

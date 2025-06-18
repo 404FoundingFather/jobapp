@@ -61,67 +61,255 @@ class LinkedInJobDiscoveryService(JobDiscoveryService):
 ```
 
 ### Frontend Architecture Patterns
-**Component Organization Pattern**
-```typescript
-// Feature-based folder structure
-// src/features/job-discovery/
-//   ├── components/
-//   │   ├── JobSearchForm.tsx
-//   │   ├── JobCard.tsx
-//   │   └── JobList.tsx
-//   ├── hooks/
-//   │   ├── useJobSearch.ts
-//   │   └── useJobFilters.ts
-//   ├── services/
-//   │   └── jobDiscoveryApi.ts
-//   ├── types/
-//   │   └── jobTypes.ts
-//   └── index.ts
 
-// Component Pattern with TypeScript
-interface JobCardProps {
-  job: Job;
-  onApply: (jobId: string) => void;
-  onSave: (jobId: string) => void;
-  isApplying?: boolean;
+**React Application Structure (Implemented)**
+```typescript
+// Current project structure - Page-based organization
+// apps/web-frontend/src/
+//   ├── components/
+//   │   ├── Layout.tsx              // Main layout with navigation
+//   │   └── ui/                     // Reusable UI components
+//   │       ├── button.tsx          // shadcn/ui Button component
+//   │       └── card.tsx            // shadcn/ui Card component
+//   ├── pages/                      // Route-based pages
+//   │   ├── Dashboard.tsx           // Main dashboard page
+//   │   ├── Jobs.tsx                // Job discovery page
+//   │   ├── Applications.tsx        // Application management
+//   │   └── Profile.tsx             // User profile page
+//   ├── lib/
+//   │   └── utils.ts                // Utility functions (cn, etc.)
+//   ├── App.tsx                     // Main app with routing
+//   ├── main.tsx                    // React entry point
+//   └── index.css                   // Tailwind CSS styles
+
+// Layout Component Pattern (Implemented)
+interface LayoutProps {
+  children: React.ReactNode;
 }
 
-export const JobCard: React.FC<JobCardProps> = ({ 
-  job, 
-  onApply, 
-  onSave, 
-  isApplying = false 
-}) => {
+export default function Layout({ children }: LayoutProps) {
+  const location = useLocation();
+
+  const isActive = (path: string) => {
+    return location.pathname === path;
+  };
+
   return (
-    <Card className="job-card">
-      <CardHeader>
-        <h3 className="text-lg font-semibold">{job.title}</h3>
-        <p className="text-gray-600">{job.company.name}</p>
-      </CardHeader>
-      <CardContent>
-        <div className="job-details">
-          <Badge variant="secondary">{job.experienceLevel}</Badge>
-          <span className="location">{job.location}</span>
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border bg-background/95 backdrop-blur">
+        <div className="container mx-auto px-4">
+          <nav className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-8">
+              <Link to="/" className="text-xl font-bold text-foreground">
+                JobApp
+              </Link>
+              <div className="hidden md:flex items-center space-x-6">
+                <Link 
+                  to="/" 
+                  className={`text-sm font-medium transition-colors hover:text-primary ${
+                    isActive('/') ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  Dashboard
+                </Link>
+                {/* More navigation links */}
+              </div>
+            </div>
+          </nav>
         </div>
-      </CardContent>
-      <CardFooter className="flex gap-2">
-        <Button 
-          onClick={() => onApply(job.id)} 
-          disabled={isApplying}
-          className="flex-1"
-        >
-          {isApplying ? <Spinner /> : 'Apply Now'}
-        </Button>
-        <Button variant="outline" onClick={() => onSave(job.id)}>
-          Save
-        </Button>
-      </CardFooter>
-    </Card>
+      </header>
+      <main>{children}</main>
+    </div>
   );
+}
+
+// shadcn/ui Component Pattern (Implemented)
+import { cn } from '../../lib/utils';
+import { cva, type VariantProps } from 'class-variance-authority';
+
+const buttonVariants = cva(
+  'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50',
+  {
+    variants: {
+      variant: {
+        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+        outline: 'border border-input bg-background hover:bg-accent',
+        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+        ghost: 'hover:bg-accent hover:text-accent-foreground',
+      },
+      size: {
+        default: 'h-10 px-4 py-2',
+        sm: 'h-9 rounded-md px-3',
+        lg: 'h-11 rounded-md px-8',
+        icon: 'h-10 w-10',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      size: 'default',
+    },
+  }
+);
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
+}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : 'button';
+    return (
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      />
+    );
+  }
+);
+
+// Page Component Pattern (Implemented)
+export default function Dashboard() {
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-foreground mb-2">
+            Job Application Automation
+          </h1>
+          <p className="text-lg text-muted-foreground">
+            AI-powered job discovery and application assistance
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Job Discovery</CardTitle>
+              <CardDescription>
+                Find relevant jobs across multiple platforms
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Intelligent job search with semantic matching.
+              </p>
+              <Button className="w-full">Search Jobs</Button>
+            </CardContent>
+          </Card>
+          {/* More cards */}
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+**React Router Pattern (Implemented)**
+```typescript
+// App.tsx - Main routing setup
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+function App() {
+  return (
+    <Router>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/jobs" element={<Jobs />} />
+          <Route path="/applications" element={<Applications />} />
+          <Route path="/profile" element={<Profile />} />
+        </Routes>
+      </Layout>
+    </Router>
+  );
+}
+
+// Navigation with active state management
+const isActive = (path: string) => {
+  return location.pathname === path;
+};
+
+<Link 
+  to="/jobs" 
+  className={`text-sm font-medium transition-colors hover:text-primary ${
+    isActive('/jobs') ? 'text-primary' : 'text-muted-foreground'
+  }`}
+>
+  Jobs
+</Link>
+```
+
+**Tailwind CSS + shadcn/ui Design System (Implemented)**
+```css
+/* index.css - CSS Variables for theming */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+  }
+}
+
+/* Utility function for conditional classes */
+// lib/utils.ts
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+```
+
+**React Query Setup (Implemented)**
+```typescript
+// main.tsx - QueryClient configuration
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
+    },
+  },
+});
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>
+  </React.StrictMode>,
+);
+
+// Future usage pattern for API calls
+export const useJobSearch = (searchParams: JobSearchParams) => {
+  return useQuery({
+    queryKey: ['jobs', 'search', searchParams],
+    queryFn: () => jobApi.searchJobs(searchParams),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: !!searchParams.query
+  });
 };
 ```
 
-**State Management Pattern**
+**State Management Pattern (Ready for Implementation)**
 ```typescript
 // Zustand Store Pattern for Global State
 import { create } from 'zustand';
@@ -156,29 +344,6 @@ export const useUserStore = create<UserState>()(
     )
   )
 );
-
-// React Query Pattern for Server State
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-
-export const useJobSearch = (searchParams: JobSearchParams) => {
-  return useQuery({
-    queryKey: ['jobs', 'search', searchParams],
-    queryFn: () => jobApi.searchJobs(searchParams),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    enabled: !!searchParams.query
-  });
-};
-
-export const useApplyToJob = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: jobApi.applyToJob,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['applications'] });
-    }
-  });
-};
 ```
 
 ## Backend Service Patterns

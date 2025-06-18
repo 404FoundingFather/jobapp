@@ -58,9 +58,11 @@ When working with this template:
 
 ### Development Tools
 - **Version Control:** Git with GitHub for code repository and project management
-- **Package Manager:** npm/yarn for frontend, pip with Poetry for Python dependencies
+- **Package Manager:** npm for frontend, pip with Poetry for Python dependencies
 - **Code Quality:** ESLint + Prettier for TypeScript, Black + isort for Python
-- **Testing:** Jest + React Testing Library for frontend, pytest for backend
+- **Testing:** Vitest + React Testing Library for frontend, pytest for backend
+- **Build Tool:** Vite 5.0+ for optimized development and production builds
+- **Design System:** Tailwind CSS + shadcn/ui component library
 
 ## Project Structure
 
@@ -114,27 +116,46 @@ jobapp/
 
 ## Key Dependencies
 
-### Frontend Dependencies
+### Frontend Dependencies (Implemented)
 ```json
 {
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "typescript": "^5.0.0",
+    "react-router-dom": "^6.8.0",
     "@tanstack/react-query": "^5.0.0",
     "zustand": "^4.4.0",
-    "react-router-dom": "^6.8.0",
+    "react-hook-form": "^7.48.0",
+    "@hookform/resolvers": "^3.3.0",
+    "zod": "^3.22.0",
+    "axios": "^1.6.0",
     "tailwindcss": "^3.3.0",
-    "@radix-ui/react-*": "^1.0.0",
-    "lucide-react": "^0.263.0"
+    "@radix-ui/react-slot": "^1.0.0",
+    "@radix-ui/react-dialog": "^1.0.0",
+    "@radix-ui/react-dropdown-menu": "^2.0.0",
+    "@radix-ui/react-select": "^2.0.0",
+    "@radix-ui/react-toast": "^1.1.0",
+    "lucide-react": "^0.290.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "tailwind-merge": "^2.0.0",
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
-    "vite": "^5.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
     "@vitejs/plugin-react": "^4.0.0",
+    "autoprefixer": "^10.4.0",
     "eslint": "^8.45.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.0",
+    "postcss": "^8.4.0",
     "prettier": "^3.0.0",
-    "@testing-library/react": "^13.4.0",
-    "jest": "^29.5.0"
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0",
+    "vitest": "^1.0.0"
   }
 }
 ```
@@ -269,10 +290,13 @@ AWS_S3_BUCKET=jobapp-documents-prod
 
 ## Deployment
 
-### Development Environment
-- **URL:** http://localhost:3000 (frontend), http://localhost:8000 (API)
-- **Database:** Local PostgreSQL with sample data
-- **Deployment:** Docker Compose for local services, npm/poetry for development servers
+### Development Environment (Active)
+- **Frontend:** http://localhost:3000 (React + Vite dev server) ✅ **RUNNING**
+- **API Gateway:** http://localhost:8000 (FastAPI with hot reload) ✅ **RUNNING**
+- **Database:** PostgreSQL with pgvector on http://localhost:5432 ✅ **HEALTHY**
+- **Cache:** Redis on http://localhost:6379 ✅ **HEALTHY**
+- **Deployment:** Docker Compose for infrastructure, npm/uvicorn for development servers
+- **Status:** All services healthy and verified working
 
 ### Staging Environment
 - **Platform:** AWS ECS with Fargate
