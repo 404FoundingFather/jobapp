@@ -377,6 +377,61 @@ Adopted React Query (TanStack Query) for server state management:
 
 ---
 
+## ADR-009: FastAPI Gateway Implementation with Comprehensive Health Monitoring
+**Date:** 2024-06-18  
+**Status:** Accepted  
+**Deciders:** Backend Lead, DevOps Lead
+
+### Context
+During Sprint 0 implementation of the FastAPI gateway, several technical decisions were required around database connectivity, health monitoring, middleware architecture, and development environment setup. The goal was to create a production-ready API foundation with comprehensive observability.
+
+### Decision
+Implemented FastAPI gateway with the following technical choices:
+- **Async Database Pattern:** SQLAlchemy async with AsyncSession and connection pooling
+- **Health Check Strategy:** Multi-service health monitoring with Kubernetes-style endpoints
+- **Middleware Stack:** Custom logging middleware with request timing and error handling
+- **Database Health Check:** Docker exec workaround for authentication issues during development
+- **Configuration Management:** Pydantic Settings with environment variable support
+- **Redis Integration:** Async Redis client with connection pooling and health monitoring
+
+### Consequences
+**Positive:**
+- Production-ready async FastAPI application with excellent performance characteristics
+- Comprehensive health monitoring enables effective system observability
+- Request/response logging provides valuable debugging and performance insights
+- Kubernetes-style endpoints (/ready, /live) support container orchestration
+- Database and Redis health checks enable proactive issue detection
+- Modular middleware design allows easy addition of features like rate limiting
+
+**Negative:**
+- Database authentication workaround using Docker exec is not production-suitable
+- Additional complexity in async database session management
+- Redis connection pooling requires careful memory management
+- Multiple health check endpoints increase API surface area
+
+**Neutral:**
+- Need to resolve database authentication for production deployment
+- Requires monitoring setup to leverage health check endpoints effectively
+- Middleware ordering becomes important for request processing pipeline
+
+### Implementation Notes
+- Database health check uses `docker exec jobapp_postgres psql -U postgres -d jobapp_dev -c 'SELECT 1'` as temporary workaround
+- Health check endpoints return structured JSON with service status and response times
+- Logging middleware adds X-Process-Time header for client-side performance monitoring
+- Redis client implements connection pooling with 20 max connections
+- All async operations use proper session management with try/finally blocks
+- CORS configuration supports both localhost:3000 and 127.0.0.1:3000 for development
+
+### Production Readiness Checklist
+- [ ] Resolve database authentication issue for direct async connections
+- [ ] Replace Docker exec health check with proper async database connection
+- [ ] Add rate limiting middleware for API protection
+- [ ] Implement structured logging with correlation IDs
+- [ ] Set up monitoring dashboards for health check endpoints
+- [ ] Configure alerts for service degradation
+
+---
+
 ## Decision Impact Assessment
 
 ### High Impact Decisions

@@ -498,6 +498,305 @@ async def search_jobs(
         )
 ```
 
+### Health Check Implementation Pattern
+Comprehensive health check system for monitoring all service dependencies
+
+```python
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from typing import Dict, Any
+import asyncio
+from datetime import datetime
+
+router = APIRouter()
+
+class HealthResponse(BaseModel):
+    status: str
+    timestamp: datetime
+    version: str
+    environment: str
+    services: Dict[str, Any]
+
+class ServiceHealth(BaseModel):
+    status: str
+    response_time_ms: float
+    details: Dict[str, Any] = {}
+
+@router.get("/health", response_model=HealthResponse)
+async def health_check():
+    """Comprehensive health check for all system components"""
+    start_time = asyncio.get_event_loop().time()
+    
+    services = {}
+    overall_status = "healthy"
+    
+    # Check Database
+    try:
+        db_start = asyncio.get_event_loop().time()
+        db_healthy = await check_database_health()
+        db_time = (asyncio.get_event_loop().time() - db_start) * 1000
+        
+        services["database"] = ServiceHealth(
+            status="healthy" if db_healthy else "unhealthy",
+            response_time_ms=round(db_time, 2),
+            details={"url": settings.DATABASE_URL.split("@")[1] if "@" in settings.DATABASE_URL else "hidden"}
+        )
+        
+        if not db_healthy:
+            overall_status = "degraded"
+            
+    except Exception as e:
+        services["database"] = ServiceHealth(
+            status="unhealthy",
+            response_time_ms=0,
+            details={"error": str(e)}
+        )
+        overall_status = "unhealthy"
+    
+    return HealthResponse(
+        status=overall_status,
+        timestamp=datetime.utcnow(),
+        version=settings.VERSION,
+        environment=settings.ENVIRONMENT,
+        services=services
+    )
+
+@router.get("/health/ready")
+async def readiness_check():
+    """Kubernetes-style readiness check"""
+    db_healthy = await check_database_health()
+    redis_healthy = await redis_client.check_health()
+    
+    if db_healthy and redis_healthy:
+        return {"status": "ready"}
+    else:
+        raise HTTPException(status_code=503, detail="Service not ready")
+
+@router.get("/health/live")
+async def liveness_check():
+    """Kubernetes-style liveness check"""
+    return {"status": "alive", "timestamp": datetime.utcnow()}
+```
+
+### Async Database Configuration Pattern
+SQLAlchemy async setup with session management and health checks
+
+```python
+from sqlalchemy import create_engine, text
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from app.core.config import settings
+
+# Create async engine for database operations
+engine = create_async_engine(
+    settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://"),
+    echo=settings.DEBUG,
+    future=True
+)
+
+# Create async session factory
+AsyncSessionLocal = sessionmaker(
+    engine, class_=AsyncSession, expire_on_commit=False
+)
+
+# Base class for SQLAlchemy models
+Base = declarative_base()
+
+# Dependency to get database session
+async def get_database_session() -> AsyncSession:
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+        finally:
+            await session.close()
+
+# Database health check
+async def check_database_health() -> bool:
+    try:
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(text("SELECT 1"))
+            return result.fetchone() is not None
+    except Exception as e:
+        print(f"Database health check failed: {e}")
+        return False
+```
+
+### Redis Client Pattern
+Async Redis client with connection pooling and health monitoring
+
+```python
+import redis.asyncio as redis
+from app.core.config import settings
+import json
+from typing import Any, Optional
+
+class RedisClient:
+    def __init__(self):
+        self.redis_pool = None
+    
+    async def connect(self):
+        """Initialize Redis connection pool"""
+        self.redis_pool = redis.ConnectionPool.from_url(
+            settings.REDIS_URL,
+            encoding="utf-8",
+            decode_responses=True,
+            max_connections=20
+        )
+    
+    async def get_client(self) -> redis.Redis:
+        """Get Redis client instance"""
+        if not self.redis_pool:
+            await self.connect()
+        return redis.Redis(connection_pool=self.redis_pool)
+    
+    async def set_cache(self, key: str, value: Any, expiry: int = 3600):
+        """Set cache value with expiry"""
+        client = await self.get_client()
+        serialized_value = json.dumps(value, default=str)
+        await client.setex(key, expiry, serialized_value)
+    
+    async def get_cache(self, key: str) -> Optional[Any]:
+        """Get cache value"""
+        client = await self.get_client()
+        value = await client.get(key)
+        if value:
+            try:
+                return json.loads(value)
+            except json.JSONDecodeError:
+                return value
+        return None
+    
+    async def check_health(self) -> bool:
+        """Check Redis connection health"""
+        try:
+            client = await self.get_client()
+            response = await client.ping()
+            return response is True
+        except Exception:
+            return False
+
+# Global Redis client instance
+redis_client = RedisClient()
+```
+
+### Request Logging Middleware Pattern
+Middleware for comprehensive request/response logging with timing
+
+```python
+import time
+import logging
+from fastapi import Request, Response
+from starlette.middleware.base import BaseHTTPMiddleware
+from app.core.config import settings
+
+# Configure logging
+logging.basicConfig(
+    level=getattr(logging, settings.LOG_LEVEL),
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+class LoggingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        start_time = time.time()
+        
+        # Log request
+        logger.info(f"Request: {request.method} {request.url.path}")
+        
+        try:
+            response = await call_next(request)
+            process_time = time.time() - start_time
+            
+            # Log response
+            logger.info(
+                f"Response: {response.status_code} - "
+                f"{request.method} {request.url.path} - "
+                f"Time: {process_time:.4f}s"
+            )
+            
+            # Add timing header
+            response.headers["X-Process-Time"] = str(process_time)
+            return response
+            
+        except Exception as e:
+            process_time = time.time() - start_time
+            logger.error(
+                f"Error: {str(e)} - "
+                f"{request.method} {request.url.path} - "
+                f"Time: {process_time:.4f}s"
+            )
+            raise
+```
+
+### FastAPI Application Configuration Pattern
+Complete FastAPI app setup with lifespan events and middleware
+
+```python
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+import logging
+
+from app.core.config import settings
+from app.core.redis_client import redis_client
+from app.middleware.logging import LoggingMiddleware
+from app.routers.health import router as health_router
+
+# Configure logging
+logger = logging.getLogger(__name__)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan events"""
+    # Startup
+    logger.info("Starting Job Application Automation System API")
+    
+    # Initialize Redis connection
+    try:
+        await redis_client.connect()
+        logger.info("Redis connection established")
+    except Exception as e:
+        logger.error(f"Redis connection failed: {e}")
+    
+    yield
+    
+    # Shutdown
+    logger.info("Shutting down Job Application Automation System API")
+    
+    # Close Redis connection
+    try:
+        await redis_client.close()
+        logger.info("Redis connection closed")
+    except Exception as e:
+        logger.error(f"Error closing Redis connection: {e}")
+
+# Create FastAPI application with lifespan events
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    version=settings.VERSION,
+    description="Job Application Automation System API - AI-powered job discovery and application assistance",
+    docs_url="/docs" if settings.DEBUG else None,
+    redoc_url="/redoc" if settings.DEBUG else None,
+    lifespan=lifespan
+)
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.BACKEND_CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+)
+
+# Add custom middleware
+app.add_middleware(LoggingMiddleware)
+
+# Include routers
+app.include_router(health_router, prefix="/api/v1", tags=["health"])
+```
+
 ### Service Layer Pattern
 Service class template for business logic
 
