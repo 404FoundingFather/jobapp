@@ -1,0 +1,204 @@
+version: '3.8'
+
+services:
+  # PostgreSQL with pgvector extension
+  postgres:
+    image: pgvector/pgvector:pg15
+    container_name: jobapp_postgres
+    environment:
+      POSTGRES_DB: jobapp_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/01-init-db.sql
+      - ./scripts/init-extensions.sql:/docker-entrypoint-initdb.d/02-init-extensions.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d jobapp_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - jobapp-network
+
+  # Redis for caching and task queues
+  redis:
+    image: redis:7-alpine
+    container_name: jobapp_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./config/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - jobapp-network
+
+  # API Gateway (FastAPI)
+  api-gateway:
+    build:
+      context: ./apps/api-gateway
+      dockerfile: Dockerfile.dev
+    container_name: jobapp_api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/jobapp_dev
+      - REDIS_URL=redis://redis:6379/0
+      - ENVIRONMENT=development
+      - DEBUG=true
+    volumes:
+      - ./apps/api-gateway:/app
+      - api_cache:/app/.cache
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - jobapp-network
+
+  # Job Discovery Service
+  job-discovery:
+    build:
+      context: ./services/job-discovery
+      dockerfile: Dockerfile.dev
+    container_name: jobapp_job_discovery
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/jobapp_dev
+      - REDIS_URL=redis://redis:6379/1
+      - ENVIRONMENT=development
+    volumes:
+      - ./services/job-discovery:/app
+    depends_on:
+      - postgres
+      - redis
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
+    networks:
+      - jobapp-network
+
+  # Resume Processor Service
+  resume-processor:
+    build:
+      context: ./services/resume-processor
+      dockerfile: Dockerfile.dev
+    container_name: jobapp_resume_processor
+    ports:
+      - "8002:8002"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/jobapp_dev
+      - REDIS_URL=redis://redis:6379/2
+      - AWS_S3_BUCKET=jobapp-documents-dev
+      - ENVIRONMENT=development
+    volumes:
+      - ./services/resume-processor:/app
+      - resume_uploads:/app/uploads
+    depends_on:
+      - postgres
+      - redis
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8002 --reload
+    networks:
+      - jobapp-network
+
+  # Cover Letter Generator Service
+  cover-letter-gen:
+    build:
+      context: ./services/cover-letter-gen
+      dockerfile: Dockerfile.dev
+    container_name: jobapp_cover_letter_gen
+    ports:
+      - "8003:8003"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/jobapp_dev
+      - REDIS_URL=redis://redis:6379/3
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ENVIRONMENT=development
+    volumes:
+      - ./services/cover-letter-gen:/app
+    depends_on:
+      - postgres
+      - redis
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8003 --reload
+    networks:
+      - jobapp-network
+
+  # Frontend (React + Vite)
+  frontend:
+    build:
+      context: ./apps/web-frontend
+      dockerfile: Dockerfile.dev
+    container_name: jobapp_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+      - VITE_APP_TITLE=Job Application Automation
+      - VITE_DEBUG_MODE=true
+    volumes:
+      - ./apps/web-frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0
+    networks:
+      - jobapp-network
+
+  # Celery Worker for Background Tasks
+  celery-worker:
+    build:
+      context: ./apps/api-gateway
+      dockerfile: Dockerfile.dev
+    container_name: jobapp_celery_worker
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/jobapp_dev
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ENVIRONMENT=development
+    volumes:
+      - ./apps/api-gateway:/app
+    depends_on:
+      - postgres
+      - redis
+    command: celery -A app.celery_app worker --loglevel=info
+    networks:
+      - jobapp-network
+
+  # Celery Flower (Task Monitoring)
+  celery-flower:
+    build:
+      context: ./apps/api-gateway
+      dockerfile: Dockerfile.dev
+    container_name: jobapp_celery_flower
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+    volumes:
+      - ./apps/api-gateway:/app
+    depends_on:
+      - redis
+    command: celery -A app.celery_app flower --port=5555
+    networks:
+      - jobapp-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  api_cache:
+  resume_uploads:
+
+networks:
+  jobapp-network:
+    driver: bridge 
