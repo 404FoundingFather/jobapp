@@ -1,0 +1,43 @@
+{
+  "name": "job-application-automation",
+  "version": "0.1.0",
+  "description": "AI-powered job application automation system",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:api\"",
+    "dev:frontend": "cd apps/web-frontend && npm run dev",
+    "dev:api": "cd apps/api-gateway && poetry run uvicorn app.main:app --reload",
+    "dev:services": "docker-compose up -d postgres redis",
+    "dev:full": "docker-compose up",
+    "build": "npm run build:frontend",
+    "build:frontend": "cd apps/web-frontend && npm run build",
+    "test": "npm run test:frontend && npm run test:backend",
+    "test:frontend": "cd apps/web-frontend && npm run test",
+    "test:backend": "cd apps/api-gateway && poetry run pytest",
+    "lint": "npm run lint:frontend && npm run lint:backend",
+    "lint:frontend": "cd apps/web-frontend && npm run lint",
+    "lint:backend": "cd apps/api-gateway && poetry run ruff check",
+    "format": "npm run format:frontend && npm run format:backend",
+    "format:frontend": "cd apps/web-frontend && npm run format",
+    "format:backend": "cd apps/api-gateway && poetry run black . && poetry run isort .",
+    "setup": "npm run setup:frontend && npm run setup:backend",
+    "setup:frontend": "cd apps/web-frontend && npm install",
+    "setup:backend": "cd apps/api-gateway && poetry install",
+    "db:migrate": "cd apps/api-gateway && poetry run alembic upgrade head",
+    "db:reset": "cd apps/api-gateway && poetry run python scripts/reset_db.py",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.17.0",
+    "npm": ">=9.0.0"
+  }
+}
