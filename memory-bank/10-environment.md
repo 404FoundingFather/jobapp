@@ -127,6 +127,10 @@ NEXT_PUBLIC_SENTRY_DSN=your-sentry-dsn
 # Development Settings
 NEXT_PUBLIC_DEBUG_MODE=true
 NEXT_PUBLIC_LOG_LEVEL=debug
+
+# Next.js Configuration
+NODE_ENV=development
+NEXT_TELEMETRY_DISABLED=1
 ```
 
 ### Backend Environment Variables (.env)
@@ -203,19 +207,23 @@ SQLALCHEMY_ECHO=false
   - **TypeScript Importer** - Auto import for TypeScript
   - **Tailwind CSS IntelliSense** - CSS class autocomplete
   - **Thunder Client** - API testing within VS Code
+  - **Next.js Snippets** - Next.js development snippets
+  - **ESLint** - JavaScript/TypeScript linting
+  - **Prettier** - Code formatting
 
 ### Development Scripts
 ```json
 {
   "scripts": {
-    "dev": "vite --host 0.0.0.0 --port 3000",
-    "build": "tsc && vite build",
-    "test": "vitest",
-    "test:watch": "vitest --watch",
-    "test:coverage": "vitest --coverage",
-    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "lint:fix": "eslint src --ext ts,tsx --fix",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "dev": "next dev --host 0.0.0.0 --port 3000",
+    "build": "next build",
+    "start": "next start",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "type-check": "tsc --noEmit"
   }
 }
@@ -280,6 +288,229 @@ poetry run alembic downgrade -1
 
 # Reset database
 poetry run python scripts/reset_db.py
+```
+
+## PostgreSQL Configuration & Troubleshooting
+
+### Docker PostgreSQL Setup
+
+#### 1. Start PostgreSQL Container
+```bash
+# Start only PostgreSQL and Redis (avoiding missing Dockerfile.dev issues)
+cd /Users/ehammond/Documents/src/jobapp
+docker-compose up -d postgres redis
+
+# Verify containers are running and healthy
+docker ps | grep -E "(postgres|redis)"
+```
+
+#### 2. Database Initialization
+The PostgreSQL container automatically runs initialization scripts:
+- `scripts/init-db.sql` - Creates databases and users
+- `scripts/init-extensions.sql` - Installs pgvector and other extensions
+
+#### 3. Connect to PostgreSQL Container
+```bash
+# Connect as postgres user to jobapp_dev database
+docker exec -it jobapp_postgres psql -U postgres -d jobapp_dev
+
+# List all databases
+\l
+
+# List all users/roles
+\du
+
+# Connect to a specific database
+\c jobapp_dev
+```
+
+### User Management & Permissions
+
+#### Default Users Created
+- **postgres** - Superuser (created by Docker image)
+- **jobapp_user** - Application user (created by init-db.sql)
+
+#### Granting Permissions to jobapp_user
+```sql
+-- Connect as postgres user first
+docker exec -it jobapp_postgres psql -U postgres -d jobapp_dev
+
+-- Grant schema usage and create permissions
+GRANT USAGE ON SCHEMA public TO jobapp_user;
+GRANT CREATE ON SCHEMA public TO jobapp_user;
+
+-- Grant all privileges on all tables (current and future)
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO jobapp_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO jobapp_user;
+
+-- Set default privileges for future tables
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO jobapp_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO jobapp_user;
+
+-- Alternative: Make jobapp_user the owner of public schema
+ALTER SCHEMA public OWNER TO jobapp_user;
+```
+
+### Connection String Configuration
+
+#### For Local Development (Outside Docker)
+```python
+# apps/api-gateway/app/core/config.py
+DATABASE_URL: str = "postgresql+asyncpg://jobapp_user:jobapp_password@localhost:5432/jobapp_dev"
+```
+
+#### For Docker Compose Services
+```python
+# Inside Docker containers (use service name as host)
+DATABASE_URL: str = "postgresql+asyncpg://jobapp_user:jobapp_password@postgres:5432/jobapp_dev"
+```
+
+### Common PostgreSQL Issues & Solutions
+
+#### Issue 1: "role 'postgres' does not exist"
+**Cause:** API gateway trying to connect to wrong PostgreSQL instance or wrong user
+**Solution:**
+```bash
+# 1. Stop local Homebrew PostgreSQL (if running)
+brew services stop postgresql
+
+# 2. Verify Docker PostgreSQL is running
+docker ps | grep postgres
+
+# 3. Update DATABASE_URL to use jobapp_user instead of postgres
+# In apps/api-gateway/app/core/config.py:
+DATABASE_URL: str = "postgresql+asyncpg://jobapp_user:jobapp_password@localhost:5432/jobapp_dev"
+```
+
+#### Issue 2: "permission denied for schema public"
+**Cause:** jobapp_user lacks permissions to create tables
+**Solution:**
+```sql
+-- Connect as postgres user and grant permissions
+docker exec -it jobapp_postgres psql -U postgres -d jobapp_dev
+
+-- Grant all necessary permissions
+GRANT USAGE ON SCHEMA public TO jobapp_user;
+GRANT CREATE ON SCHEMA public TO jobapp_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO jobapp_user;
+
+-- Or make jobapp_user the schema owner
+ALTER SCHEMA public OWNER TO jobapp_user;
+```
+
+#### Issue 3: "invalid input syntax for type uuid: 'gen_random_uuid()'"
+**Cause:** SQLAlchemy model using incorrect UUID default syntax
+**Solution:**
+```python
+# In SQLAlchemy models, use text() wrapper for function calls
+from sqlalchemy import text
+
+# Correct syntax:
+id = Column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
+
+# Wrong syntax:
+id = Column(UUID(as_uuid=True), primary_key=True, server_default="gen_random_uuid()")
+```
+
+#### Issue 4: Port conflicts between local and Docker PostgreSQL
+**Cause:** Both local Homebrew PostgreSQL and Docker PostgreSQL trying to use port 5432
+**Solution:**
+```bash
+# Option 1: Stop local PostgreSQL (recommended)
+brew services stop postgresql
+
+# Option 2: Change Docker port mapping
+# In docker-compose.yml:
+ports:
+  - "5433:5432"  # Map Docker 5432 to host 5433
+
+# Then update DATABASE_URL:
+DATABASE_URL: str = "postgresql+asyncpg://jobapp_user:jobapp_password@localhost:5433/jobapp_dev"
+```
+
+### Database Verification Commands
+
+#### Check Database Health
+```bash
+# Verify PostgreSQL container is healthy
+docker ps | grep postgres
+
+# Test database connection
+docker exec -it jobapp_postgres pg_isready -U postgres -d jobapp_dev
+
+# Check if pgvector extension is installed
+docker exec -it jobapp_postgres psql -U postgres -d jobapp_dev -c "SELECT * FROM pg_extension WHERE extname = 'pgvector';"
+```
+
+#### Verify Tables Created
+```bash
+# Connect to database and list tables
+docker exec -it jobapp_postgres psql -U jobapp_user -d jobapp_dev -c "\dt"
+
+# Check specific table structure
+docker exec -it jobapp_postgres psql -U jobapp_user -d jobapp_dev -c "\d users"
+```
+
+### Environment-Specific Configuration
+
+#### Development Environment
+```env
+# .env file for local development
+DATABASE_URL=postgresql+asyncpg://jobapp_user:jobapp_password@localhost:5432/jobapp_dev
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_NAME=jobapp_dev
+DATABASE_USER=jobapp_user
+DATABASE_PASSWORD=jobapp_password
+```
+
+#### Test Environment
+```env
+# .env.test file
+DATABASE_URL=postgresql+asyncpg://jobapp_user:jobapp_password@localhost:5432/jobapp_test
+DATABASE_NAME=jobapp_test
+```
+
+#### Production Environment
+```env
+# Production environment variables
+DATABASE_URL=postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+DATABASE_HOST=${DB_HOST}
+DATABASE_PORT=${DB_PORT}
+DATABASE_NAME=${DB_NAME}
+DATABASE_USER=${DB_USER}
+DATABASE_PASSWORD=${DB_PASSWORD}
+```
+
+### Database Reset Procedures
+
+#### Complete Database Reset
+```bash
+# Stop all services
+docker-compose down
+
+# Remove PostgreSQL volume (WARNING: This deletes all data)
+docker volume rm jobapp_postgres_data
+
+# Restart services
+docker-compose up -d postgres redis
+
+# Wait for initialization
+sleep 15
+
+# Verify databases created
+docker exec -it jobapp_postgres psql -U postgres -c "\l"
+```
+
+#### Reset Specific Database
+```bash
+# Drop and recreate specific database
+docker exec -it jobapp_postgres psql -U postgres -c "DROP DATABASE IF EXISTS jobapp_dev;"
+docker exec -it jobapp_postgres psql -U postgres -c "CREATE DATABASE jobapp_dev OWNER jobapp_user;"
+
+# Re-run initialization scripts
+docker exec -it jobapp_postgres psql -U postgres -d jobapp_dev -f /docker-entrypoint-initdb.d/01-init-db.sql
+docker exec -it jobapp_postgres psql -U postgres -d jobapp_dev -f /docker-entrypoint-initdb.d/02-init-extensions.sql
 ```
 
 ## Testing Environment
@@ -472,7 +703,7 @@ kill -9 [process-id]         # macOS/Linux
 taskkill /PID [process-id] /F  # Windows
 
 # Alternative: Use different port
-VITE_PORT=3001 npm run dev
+PORT=3001 npm run dev
 ```
 
 #### Database Connection Issues
@@ -498,7 +729,7 @@ poetry install
 - Verify `.env` files exist and have correct values
 - Check environment variable naming matches exactly (case-sensitive)
 - Restart development servers after changing environment variables
-- Use `printenv | grep VITE_` to check loaded variables
+- Use `printenv | grep NEXT_` to check loaded variables
 
 ### Getting Help
 - **Documentation:** https://github.com/your-org/jobapp/wiki

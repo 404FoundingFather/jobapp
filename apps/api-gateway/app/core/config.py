@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     
     # Database Configuration
-    DATABASE_URL: str = "postgresql://postgres:password@localhost:5432/jobapp_dev"
+    DATABASE_URL: str = "postgresql+asyncpg://jobapp_user:jobapp_password@localhost:5432/jobapp_dev"
     
     # Redis Configuration
     REDIS_URL: str = "redis://localhost:6379/0"

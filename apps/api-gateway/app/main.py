@@ -5,8 +5,10 @@ import logging
 
 from app.core.config import settings
 from app.core.redis_client import redis_client
+from app.core.database import init_db, close_db
 from app.middleware.logging import LoggingMiddleware
 from app.routers.health import router as health_router
+from app.routers.users import router as users_router
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -16,6 +18,13 @@ async def lifespan(app: FastAPI):
     """Application lifespan events"""
     # Startup
     logger.info("Starting Job Application Automation System API")
+    
+    # Initialize database
+    try:
+        await init_db()
+        logger.info("Database initialized successfully")
+    except Exception as e:
+        logger.error(f"Database initialization failed: {e}")
     
     # Initialize Redis connection
     try:
@@ -28,6 +37,13 @@ async def lifespan(app: FastAPI):
     
     # Shutdown
     logger.info("Shutting down Job Application Automation System API")
+    
+    # Close database connections
+    try:
+        await close_db()
+        logger.info("Database connections closed")
+    except Exception as e:
+        logger.error(f"Error closing database connections: {e}")
     
     # Close Redis connection
     try:
@@ -60,6 +76,7 @@ app.add_middleware(LoggingMiddleware)
 
 # Include routers
 app.include_router(health_router, prefix="/api/v1", tags=["health"])
+app.include_router(users_router, prefix="/api/v1/users", tags=["users"])
 
 # Root endpoint
 @app.get("/", tags=["root"])

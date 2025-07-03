@@ -5,7 +5,7 @@ import asyncio
 from datetime import datetime
 
 from app.core.config import settings
-from app.core.database import check_database_health
+from app.core.database import check_db_health
 from app.core.redis_client import redis_client
 
 router = APIRouter()
@@ -33,16 +33,21 @@ async def health_check():
     # Check Database
     try:
         db_start = asyncio.get_event_loop().time()
-        db_healthy = await check_database_health()
+        db_health = await check_db_health()
         db_time = (asyncio.get_event_loop().time() - db_start) * 1000
         
         services["database"] = ServiceHealth(
-            status="healthy" if db_healthy else "unhealthy",
+            status=db_health["status"],
             response_time_ms=round(db_time, 2),
-            details={"url": settings.DATABASE_URL.split("@")[1] if "@" in settings.DATABASE_URL else "hidden"}
+            details={
+                "url": settings.DATABASE_URL.split("@")[1] if "@" in settings.DATABASE_URL else "hidden",
+                "tables_exist": db_health["tables_exist"],
+                "pgvector_available": db_health["pgvector_available"],
+                "tables_found": db_health["tables_found"]
+            }
         )
         
-        if not db_healthy:
+        if db_health["status"] != "healthy":
             overall_status = "degraded"
             
     except Exception as e:
@@ -111,10 +116,10 @@ async def health_check():
 @router.get("/health/ready")
 async def readiness_check():
     """Kubernetes-style readiness check"""
-    db_healthy = await check_database_health()
+    db_health = await check_db_health()
     redis_healthy = await redis_client.check_health()
     
-    if db_healthy and redis_healthy:
+    if db_health["status"] == "healthy" and redis_healthy:
         return {"status": "ready"}
     else:
         raise HTTPException(status_code=503, detail="Service not ready")
