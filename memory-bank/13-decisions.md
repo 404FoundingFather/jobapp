@@ -85,7 +85,58 @@ Selected technology stack:
 
 ---
 
-## ADR-002: PostgreSQL with pgvector for Semantic Job Matching
+## ADR-002: Migration from Vite to Next.js Frontend Framework
+**Date:** 2024-07-XX  
+**Status:** Accepted  
+**Deciders:** Project Lead, Frontend Developer
+
+### Context
+The project initially used Vite with React for the frontend, but encountered critical build issues:
+- "can't detect preamble" error preventing frontend from rendering
+- React version conflicts between React 18 and React 19 (from Radix UI dependencies)
+- Vite plugin conflicts between @vitejs/plugin-react and @vitejs/plugin-react-swc
+- Dependency resolution issues that were difficult to resolve without major changes
+
+### Decision
+Migrated from Vite to Next.js 14 for the frontend framework:
+- **Framework:** Next.js 14.2.30 with App Router
+- **Build System:** Next.js built-in build system replacing Vite
+- **Routing:** File-based routing replacing React Router
+- **Development:** Next.js dev server replacing Vite dev server
+- **Configuration:** next.config.js replacing vite.config.ts
+
+### Consequences
+**Positive:**
+- Resolved critical "can't detect preamble" build error
+- Eliminated React version conflicts and dependency issues
+- Better React integration with native Next.js support
+- Improved performance with built-in optimizations and code splitting
+- Enhanced developer experience with better TypeScript support
+- Production-ready build process with optimized deployment
+- File-based routing system is more intuitive and maintainable
+
+**Negative:**
+- Required migration effort and code changes
+- Different configuration patterns and development workflow
+- Learning curve for team members familiar with Vite
+- Slightly different deployment process
+
+**Neutral:**
+- Both frameworks are well-supported and mature
+- Migration was completed successfully with minimal disruption
+- Future development will follow Next.js patterns and conventions
+
+### Implementation Notes
+- Updated all components to use Next.js Link component instead of React Router
+- Migrated from useLocation to usePathname for navigation state
+- Updated environment variables from VITE_ prefix to NEXT_PUBLIC_ prefix
+- Configured PostCSS for Next.js compatibility
+- Updated TypeScript configuration for Next.js requirements
+- All pages now use Next.js app directory structure
+
+---
+
+## ADR-003: PostgreSQL with pgvector for Semantic Job Matching
 **Date:** 2024-01-XX  
 **Status:** Accepted  
 **Deciders:** Backend Lead, Database Administrator
@@ -126,7 +177,7 @@ Adopted PostgreSQL 15+ with pgvector extension:
 
 ---
 
-## ADR-003: Microservices Architecture with Event-Driven Orchestration
+## ADR-004: Microservices Architecture with Event-Driven Orchestration
 **Date:** 2024-01-XX  
 **Status:** Accepted  
 **Deciders:** Tech Lead, System Architect
@@ -169,7 +220,7 @@ Implemented microservices architecture with event-driven communication:
 
 ---
 
-## ADR-004: OpenAI GPT-4 for Content Generation with Local Fallbacks
+## ADR-005: OpenAI GPT-4 for Content Generation with Local Fallbacks
 **Date:** 2024-01-XX  
 **Status:** Accepted  
 **Deciders:** AI/ML Lead, Product Lead
@@ -211,7 +262,7 @@ Hybrid approach with OpenAI GPT-4 as primary and local models as backup:
 
 ---
 
-## ADR-005: Playwright for Browser Automation with Anti-Detection
+## ADR-006: Playwright for Browser Automation with Anti-Detection
 **Date:** 2024-01-XX  
 **Status:** Accepted  
 **Deciders:** Automation Lead, Tech Lead
@@ -254,7 +305,7 @@ Selected Playwright with comprehensive anti-detection measures:
 
 ---
 
-## ADR-006: JWT Authentication with Redis Session Management
+## ADR-007: JWT Authentication with Redis Session Management
 **Date:** 2024-01-XX  
 **Status:** Accepted  
 **Deciders:** Security Lead, Backend Lead
@@ -295,7 +346,7 @@ Implemented JWT tokens with Redis-backed session management:
 
 ---
 
-## ADR-007: Celery with Redis for Background Task Processing
+## ADR-008: Celery with Redis for Background Task Processing
 **Date:** 2024-01-XX  
 **Status:** Accepted  
 **Deciders:** Backend Lead, Infrastructure Lead
@@ -336,7 +387,7 @@ Implemented Celery task queue with Redis as both broker and result backend:
 
 ---
 
-## ADR-008: React Query for Server State Management
+## ADR-009: React Query for Server State Management
 **Date:** 2024-01-XX  
 **Status:** Accepted  
 **Deciders:** Frontend Lead, UX Lead
@@ -377,7 +428,7 @@ Adopted React Query (TanStack Query) for server state management:
 
 ---
 
-## ADR-009: FastAPI Gateway Implementation with Comprehensive Health Monitoring
+## ADR-010: FastAPI Gateway Implementation with Comprehensive Health Monitoring
 **Date:** 2024-06-18  
 **Status:** Accepted  
 **Deciders:** Backend Lead, DevOps Lead
@@ -436,17 +487,17 @@ Implemented FastAPI gateway with the following technical choices:
 
 ### High Impact Decisions
 - **Technology Stack (ADR-001):** Fundamental choice affecting all development
-- **Database Architecture (ADR-002):** Core data strategy with performance implications
-- **Microservices Design (ADR-003):** System architecture affecting scalability and development
+- **Database Architecture (ADR-003):** Core data strategy with performance implications
+- **Microservices Design (ADR-004):** System architecture affecting scalability and development
 
 ### Medium Impact Decisions
-- **AI Integration (ADR-004):** Feature quality and operational costs
-- **Browser Automation (ADR-005):** Core functionality success and legal compliance
-- **Authentication Strategy (ADR-006):** Security and user experience
+- **AI Integration (ADR-005):** Feature quality and operational costs
+- **Browser Automation (ADR-006):** Core functionality success and legal compliance
+- **Authentication Strategy (ADR-007):** Security and user experience
 
 ### Lower Impact Decisions
-- **Background Processing (ADR-007):** Performance and system reliability
-- **State Management (ADR-008):** Frontend development efficiency and UX
+- **Background Processing (ADR-008):** Performance and system reliability
+- **State Management (ADR-009):** Frontend development efficiency and UX
 
 ## Decision Review Schedule
 

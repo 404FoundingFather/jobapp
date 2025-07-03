@@ -1,16 +1,19 @@
-import React from 'react'
-import { Link, useLocation } from 'react-router-dom'
+'use client'
+
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { Button } from '../components/ui/button'
+import { UserAvatar } from './user/UserAvatar'
 
 interface LayoutProps {
   children: React.ReactNode
 }
 
 export default function Layout({ children }: LayoutProps) {
-  const location = useLocation()
+  const pathname = usePathname()
 
   const isActive = (path: string) => {
-    return location.pathname === path
+    return pathname === path
   }
 
   return (
@@ -19,12 +22,12 @@ export default function Layout({ children }: LayoutProps) {
         <div className="container mx-auto px-4">
           <nav className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-8">
-              <Link to="/" className="text-xl font-bold text-foreground">
+              <Link href="/" className="text-xl font-bold text-foreground">
                 JobApp
               </Link>
               <div className="hidden md:flex items-center space-x-6">
                 <Link 
-                  to="/" 
+                  href="/" 
                   className={`text-sm font-medium transition-colors hover:text-primary ${
                     isActive('/') ? 'text-primary' : 'text-muted-foreground'
                   }`}
@@ -32,7 +35,7 @@ export default function Layout({ children }: LayoutProps) {
                   Dashboard
                 </Link>
                 <Link 
-                  to="/jobs" 
+                  href="/jobs" 
                   className={`text-sm font-medium transition-colors hover:text-primary ${
                     isActive('/jobs') ? 'text-primary' : 'text-muted-foreground'
                   }`}
@@ -40,7 +43,7 @@ export default function Layout({ children }: LayoutProps) {
                   Jobs
                 </Link>
                 <Link 
-                  to="/applications" 
+                  href="/applications" 
                   className={`text-sm font-medium transition-colors hover:text-primary ${
                     isActive('/applications') ? 'text-primary' : 'text-muted-foreground'
                   }`}
@@ -48,7 +51,7 @@ export default function Layout({ children }: LayoutProps) {
                   Applications
                 </Link>
                 <Link 
-                  to="/profile" 
+                  href="/profile" 
                   className={`text-sm font-medium transition-colors hover:text-primary ${
                     isActive('/profile') ? 'text-primary' : 'text-muted-foreground'
                   }`}
@@ -61,9 +64,7 @@ export default function Layout({ children }: LayoutProps) {
               <Button variant="outline" size="sm">
                 Help
               </Button>
-              <Button size="sm">
-                Account
-              </Button>
+              <UserAvatar userName="John Doe" />
             </div>
           </nav>
         </div>

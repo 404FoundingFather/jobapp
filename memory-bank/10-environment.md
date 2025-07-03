@@ -18,7 +18,7 @@
 
 ### Prerequisites
 - **Operating System:** macOS 10.15+, Windows 10+, or Ubuntu 18.04+
-- **Node.js:** Version 18.17.0 or higher
+- **Node.js:** Version 20.19.3 LTS (updated for Next.js compatibility)
 - **Python:** Version 3.11 or higher
 - **Docker:** Version 24.0+ with Docker Compose
 - **PostgreSQL:** Version 15+ (or use Docker)
@@ -35,7 +35,7 @@ cd jobapp
 
 #### 2. Install Dependencies
 ```bash
-# Frontend dependencies
+# Frontend dependencies (Next.js)
 cd apps/web-frontend
 npm install
 
@@ -86,7 +86,7 @@ poetry run python scripts/seed_dev_data.py
 
 #### 5. Start Development Servers
 ```bash
-# Terminal 1: Frontend (React with Vite)
+# Terminal 1: Frontend (Next.js)
 cd apps/web-frontend
 npm run dev
 
@@ -112,21 +112,21 @@ poetry run celery -A app.celery_app worker --loglevel=info
 ### Frontend Environment Variables (.env.local)
 ```env
 # Application Configuration
-VITE_API_URL=http://localhost:8000
-VITE_APP_TITLE=Job Application Automation
-VITE_APP_VERSION=0.1.0
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_APP_TITLE=Job Application Automation
+NEXT_PUBLIC_APP_VERSION=0.1.0
 
 # Authentication
-VITE_AUTH_PROVIDER=jwt
-VITE_AUTH_DOMAIN=localhost
+NEXT_PUBLIC_AUTH_PROVIDER=jwt
+NEXT_PUBLIC_AUTH_DOMAIN=localhost
 
 # External Services
-VITE_ANALYTICS_ID=GA-MEASUREMENT-ID
-VITE_SENTRY_DSN=your-sentry-dsn
+NEXT_PUBLIC_ANALYTICS_ID=GA-MEASUREMENT-ID
+NEXT_PUBLIC_SENTRY_DSN=your-sentry-dsn
 
 # Development Settings
-VITE_DEBUG_MODE=true
-VITE_LOG_LEVEL=debug
+NEXT_PUBLIC_DEBUG_MODE=true
+NEXT_PUBLIC_LOG_LEVEL=debug
 ```
 
 ### Backend Environment Variables (.env)

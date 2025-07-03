@@ -62,25 +62,35 @@ class LinkedInJobDiscoveryService(JobDiscoveryService):
 
 ### Frontend Architecture Patterns
 
-**React Application Structure (Implemented)**
+**Next.js Application Structure (Implemented)**
 ```typescript
-// Current project structure - Page-based organization
-// apps/web-frontend/src/
-//   ├── components/
-//   │   ├── Layout.tsx              // Main layout with navigation
-//   │   └── ui/                     // Reusable UI components
-//   │       ├── button.tsx          // shadcn/ui Button component
-//   │       └── card.tsx            // shadcn/ui Card component
-//   ├── pages/                      // Route-based pages
-//   │   ├── Dashboard.tsx           // Main dashboard page
-//   │   ├── Jobs.tsx                // Job discovery page
-//   │   ├── Applications.tsx        // Application management
-//   │   └── Profile.tsx             // User profile page
-//   ├── lib/
-//   │   └── utils.ts                // Utility functions (cn, etc.)
-//   ├── App.tsx                     // Main app with routing
-//   ├── main.tsx                    // React entry point
-//   └── index.css                   // Tailwind CSS styles
+// Current project structure - App directory organization
+// apps/web-frontend/
+//   ├── app/                        # Next.js 13+ app directory
+//   │   ├── layout.tsx             # Root layout with metadata
+//   │   ├── page.tsx               # Home page (Dashboard)
+//   │   ├── jobs/page.tsx          # Jobs page
+//   │   ├── applications/page.tsx  # Applications page
+//   │   └── profile/page.tsx       # Profile page
+//   ├── src/
+//   │   ├── components/            # Reusable UI components
+//   │   │   ├── ui/               # shadcn/ui components
+//   │   │   │   ├── button.tsx    # Button component
+//   │   │   │   └── card.tsx      # Card component
+//   │   │   └── Layout.tsx        # Main layout component
+//   │   ├── pages/                # Page components (legacy structure)
+//   │   │   ├── Dashboard.tsx     # Dashboard page component
+//   │   │   ├── Jobs.tsx          # Jobs page component
+//   │   │   ├── Applications.tsx  # Applications page component
+//   │   │   └── Profile.tsx       # Profile page component
+//   │   ├── stores/               # Zustand state stores
+//   │   ├── services/             # API client services
+//   │   ├── types/                # TypeScript type definitions
+//   │   └── lib/                  # Utility functions
+//   │       └── utils.ts          # Common utilities (cn function)
+//   ├── next.config.js            # Next.js configuration
+//   ├── tailwind.config.js        # Tailwind CSS configuration
+//   └── package.json              # Dependencies and scripts
 
 // Layout Component Pattern (Implemented)
 interface LayoutProps {
@@ -88,32 +98,58 @@ interface LayoutProps {
 }
 
 export default function Layout({ children }: LayoutProps) {
-  const location = useLocation();
+  const pathname = usePathname();
 
   const isActive = (path: string) => {
-    return location.pathname === path;
+    return pathname === path;
   };
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-background/95 backdrop-blur">
+      <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4">
           <nav className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-8">
-              <Link to="/" className="text-xl font-bold text-foreground">
+              <Link href="/" className="text-xl font-bold text-foreground">
                 JobApp
               </Link>
               <div className="hidden md:flex items-center space-x-6">
                 <Link 
-                  to="/" 
+                  href="/" 
                   className={`text-sm font-medium transition-colors hover:text-primary ${
                     isActive('/') ? 'text-primary' : 'text-muted-foreground'
                   }`}
                 >
                   Dashboard
                 </Link>
-                {/* More navigation links */}
+                <Link 
+                  href="/jobs" 
+                  className={`text-sm font-medium transition-colors hover:text-primary ${
+                    isActive('/jobs') ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  Jobs
+                </Link>
+                <Link 
+                  href="/applications" 
+                  className={`text-sm font-medium transition-colors hover:text-primary ${
+                    isActive('/applications') ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  Applications
+                </Link>
+                <Link 
+                  href="/profile" 
+                  className={`text-sm font-medium transition-colors hover:text-primary ${
+                    isActive('/profile') ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  Profile
+                </Link>
               </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <UserAvatar />
             </div>
           </nav>
         </div>

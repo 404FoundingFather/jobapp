@@ -19,341 +19,188 @@ When working with this template:
 
 ---
 
-## Technology Stack
+## Technology Stack Overview
 
-### Frontend (Web Application)
-- **Framework:** React 18+ with TypeScript 5.0+
-- **Language:** TypeScript for type safety and better development experience
-- **Build Tool:** Vite 5.0+ for fast development and optimized production builds
-- **Styling:** Tailwind CSS with shadcn/ui component library for consistent design system
-- **State Management:** Zustand for global state, React Query for server state management
+### Frontend Technology Stack
+- **Framework:** Next.js 14.2.30 (migrated from Vite for better React integration)
+- **Language:** TypeScript 5.0+
+- **Styling:** Tailwind CSS 3.3+ with shadcn/ui components
+- **State Management:** Zustand 4.4+ for client-side state
+- **Data Fetching:** TanStack React Query 5.0+ for server state
+- **Forms:** React Hook Form 7.48+ with Zod validation
+- **UI Components:** Radix UI primitives with custom styling
+- **Icons:** Lucide React for consistent iconography
+- **Routing:** Next.js App Router (file-based routing)
 
-### Backend (Server Applications)
-- **Runtime/Language:** Python 3.11+ for ML/NLP ecosystem advantages
-- **Framework:** FastAPI 0.104+ for async support, automatic docs, and type safety
-- **API Type:** RESTful APIs with GraphQL for complex dashboard queries
-- **Authentication:** JWT tokens with OAuth2 for third-party platform integration
-- **Task Processing:** Celery 5.3+ with Redis as message broker
+### Backend Technology Stack
+- **Framework:** FastAPI 0.104+ with async/await support
+- **Language:** Python 3.11+
+- **Database:** PostgreSQL 15+ with pgvector extension for semantic search
+- **Caching:** Redis 7.0+ for session storage and task queues
+- **Authentication:** JWT tokens with secure password hashing
+- **API Documentation:** Automatic OpenAPI/Swagger generation
+- **Background Tasks:** Celery with Redis broker
+- **Testing:** Pytest with async test support
 
-### Database & Storage
-- **Primary Database:** PostgreSQL 15+ for complex relational data and JSON support
-- **Caching:** Redis 7.0+ for session management, task queues, and API caching
-- **Search:** PostgreSQL full-text search with pg_trgm for fuzzy matching
-- **File Storage:** AWS S3 for resume documents, generated files, and static assets
-- **Vector Database:** pgvector extension for semantic similarity searches
+### Development & DevOps
+- **Package Management:** Poetry for Python, npm for Node.js
+- **Containerization:** Docker & Docker Compose for development
+- **CI/CD:** GitHub Actions with automated testing
+- **Code Quality:** ESLint, Prettier, Black, Ruff
+- **Version Control:** Git with conventional commits
+- **Environment:** Node.js 20 LTS for frontend development
 
-### Web Automation & ML/NLP
-- **Browser Automation:** Playwright 1.40+ for modern anti-detection capabilities
-- **NLP Processing:** spaCy 3.7+ for text processing and entity extraction
-- **Semantic Similarity:** sentence-transformers for local embeddings
-- **Content Generation:** OpenAI GPT-4 API for cover letter and content generation
-- **Resume Parsing:** PyMuPDF and python-docx for document processing
+### AI/ML Integration
+- **Language Models:** OpenAI GPT-4 for content generation
+- **Embeddings:** Sentence transformers for semantic search
+- **NLP Processing:** spaCy for text analysis
+- **Vector Database:** PostgreSQL with pgvector extension
 
-### Infrastructure & DevOps
-- **Deployment Target:** AWS ECS/Fargate with containerized microservices
-- **Containerization:** Docker with multi-stage builds for optimized images
-- **CI/CD:** GitHub Actions for automated testing, building, and deployment
-- **Monitoring:** AWS CloudWatch with custom metrics and Sentry for error tracking
-- **Load Balancing:** AWS Application Load Balancer with auto-scaling
+### Infrastructure (Production Ready)
+- **Cloud Platform:** AWS (ECS/Fargate, RDS, ElastiCache, S3)
+- **Load Balancing:** Application Load Balancer
+- **Monitoring:** CloudWatch with custom metrics
+- **Security:** IAM roles, VPC, security groups
+- **SSL/TLS:** ACM certificates for HTTPS
 
-### Development Tools
-- **Version Control:** Git with GitHub for code repository and project management
-- **Package Manager:** npm for frontend, pip with Poetry for Python dependencies
-- **Code Quality:** ESLint + Prettier for TypeScript, Black + isort for Python
-- **Testing:** Vitest + React Testing Library for frontend, pytest for backend
-- **Build Tool:** Vite 5.0+ for optimized development and production builds
-- **Design System:** Tailwind CSS + shadcn/ui component library
-
-## Project Structure
-
-### Monorepo Structure
-```
-jobapp/
-├── apps/
-│   ├── web-frontend/             # React TypeScript dashboard
-│   │   ├── src/
-│   │   │   ├── components/       # Reusable UI components
-│   │   │   ├── pages/           # Application pages/routes
-│   │   │   ├── hooks/           # Custom React hooks
-│   │   │   ├── stores/          # Zustand state stores
-│   │   │   ├── services/        # API client services
-│   │   │   └── types/           # TypeScript type definitions
-│   │   ├── public/              # Static assets
-│   │   └── package.json
-│   └── api-gateway/             # FastAPI gateway service
-│       ├── app/
-│       │   ├── routers/         # API route handlers
-│       │   ├── middleware/      # Authentication, CORS, etc.
-│       │   ├── models/          # Pydantic models
-│       │   └── core/            # Configuration and utilities
-│       └── requirements.txt
-├── services/
-│   ├── job-discovery/           # Job scraping and aggregation
-│   │   ├── scrapers/            # Platform-specific scrapers
-│   │   ├── processors/          # Data processing and deduplication
-│   │   └── models/              # Job data models
-│   ├── resume-processor/        # Resume parsing and tailoring
-│   │   ├── parsers/             # Document parsing utilities
-│   │   ├── analyzers/           # Skills and experience analysis
-│   │   └── generators/          # Tailored resume generation
-│   ├── cover-letter-gen/        # AI-powered cover letter service
-│   │   ├── generators/          # Content generation logic
-│   │   ├── research/            # Company research utilities
-│   │   └── templates/           # Letter templates and styles
-│   └── automation-engine/       # Browser automation service
-│       ├── drivers/             # Browser automation drivers
-│       ├── platforms/           # ATS-specific automation
-│       └── anti-detection/      # Anti-bot detection measures
-├── packages/
-│   ├── shared-types/            # TypeScript types shared across services
-│   ├── ui-components/           # React component library
-│   ├── python-shared/           # Python utilities and models
-│   └── api-client/              # TypeScript API client
-├── docs/                        # Documentation
-├── memory-bank/                 # AI Memory Bank
-└── infrastructure/              # Docker, AWS CDK, deployment configs
-```
-
-## Key Dependencies
-
-### Frontend Dependencies (Implemented)
-```json
-{
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.8.0",
-    "@tanstack/react-query": "^5.0.0",
-    "zustand": "^4.4.0",
-    "react-hook-form": "^7.48.0",
-    "@hookform/resolvers": "^3.3.0",
-    "zod": "^3.22.0",
-    "axios": "^1.6.0",
-    "tailwindcss": "^3.3.0",
-    "@radix-ui/react-slot": "^1.0.0",
-    "@radix-ui/react-dialog": "^1.0.0",
-    "@radix-ui/react-dropdown-menu": "^2.0.0",
-    "@radix-ui/react-select": "^2.0.0",
-    "@radix-ui/react-toast": "^1.1.0",
-    "lucide-react": "^0.290.0",
-    "class-variance-authority": "^0.7.0",
-    "clsx": "^2.0.0",
-    "tailwind-merge": "^2.0.0",
-    "tailwindcss-animate": "^1.0.7"
-  },
-  "devDependencies": {
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "@vitejs/plugin-react": "^4.0.0",
-    "autoprefixer": "^10.4.0",
-    "eslint": "^8.45.0",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.0",
-    "postcss": "^8.4.0",
-    "prettier": "^3.0.0",
-    "typescript": "^5.0.0",
-    "vite": "^5.0.0",
-    "vitest": "^1.0.0"
-  }
-}
-```
-
-### Backend Dependencies
-```txt
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-pydantic==2.5.0
-sqlalchemy==2.0.23
-asyncpg==0.29.0
-redis==5.0.1
-celery==5.3.4
-playwright==1.40.0
-spacy==3.7.2
-sentence-transformers==2.2.2
-openai==1.3.0
-PyMuPDF==1.23.0
-python-docx==1.1.0
-pydantic-settings==2.1.0
-python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
-pytest==7.4.3
-pytest-asyncio==0.21.1
-```
-
-## Development Environment Setup
+## Development Environment
 
 ### Prerequisites
-- **Node.js:** v18.17.0+ with npm 9.0+
-- **Python:** 3.11+ with pip and Poetry
-- **PostgreSQL:** 15+ for local development
-- **Redis:** 7.0+ for caching and task queues
-- **Docker:** 24.0+ for containerization
-- **AWS CLI:** For cloud resource management
+- **Node.js:** Version 20.19.3 LTS (updated from Node 22 for compatibility)
+- **Python:** Version 3.11 or higher
+- **Docker:** Version 24.0+ with Docker Compose
+- **Git:** Version 2.30+
 
-### Quick Start
+### Local Development Setup
 ```bash
-# Clone repository
-git clone <repository-url>
-cd jobapp
-
-# Install frontend dependencies
+# Frontend (Next.js)
 cd apps/web-frontend
 npm install
+npm run dev  # Runs on http://localhost:3000
 
-# Install backend dependencies (using Poetry)
-cd ../api-gateway
+# Backend (FastAPI)
+cd apps/api-gateway
 poetry install
-cd ../../services/job-discovery
-poetry install
-# Repeat for other services
+poetry run uvicorn app.main:app --reload  # Runs on http://localhost:8000
 
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your configuration
-
-# Set up local database
-createdb jobapp_dev
-poetry run alembic upgrade head
-
-# Start development services
-docker-compose up -d redis postgres
-npm run dev  # Frontend
-poetry run uvicorn app.main:app --reload  # Backend
+# Database & Redis
+docker-compose up -d postgres redis
 ```
 
-### Environment Variables
+### Key Configuration Files
+- **Frontend:** `apps/web-frontend/next.config.js`, `tsconfig.json`, `tailwind.config.js`
+- **Backend:** `apps/api-gateway/pyproject.toml`, `alembic.ini`
+- **Database:** `scripts/init-db.sql`, `scripts/init-extensions.sql`
+- **Docker:** `docker-compose.yml`, `Dockerfile.dev` files
 
-#### Core Application Settings
-```env
-# Environment
-ENVIRONMENT=development
-DEBUG=true
-LOG_LEVEL=debug
+## Architecture Patterns
 
-# API Configuration
-API_HOST=localhost
-API_PORT=8000
-FRONTEND_URL=http://localhost:3000
+### Frontend Architecture
+- **App Directory:** Next.js 13+ app directory structure
+- **Component Library:** Reusable UI components with TypeScript
+- **State Management:** Client state with Zustand, server state with React Query
+- **Styling:** Utility-first CSS with Tailwind, component variants with CVA
+- **Type Safety:** Full TypeScript integration with strict mode
 
-# Database Configuration
-DATABASE_URL=postgresql://user:password@localhost:5432/jobapp_dev
-REDIS_URL=redis://localhost:6379/0
+### Backend Architecture
+- **API Gateway:** FastAPI with dependency injection
+- **Service Layer:** Business logic separation with async operations
+- **Data Access:** SQLAlchemy with async support
+- **Caching:** Redis for session and query caching
+- **Background Jobs:** Celery for long-running tasks
 
-# Authentication & Security
-JWT_SECRET_KEY=your-secret-key-here
-JWT_ALGORITHM=HS256
-JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+### Data Architecture
+- **Primary Database:** PostgreSQL with pgvector for embeddings
+- **Caching Layer:** Redis for sessions and temporary data
+- **File Storage:** S3-compatible storage for documents
+- **Search:** Full-text search with semantic capabilities
 
-# OpenAI Configuration
-OPENAI_API_KEY=your-openai-api-key
-OPENAI_MODEL=gpt-4
+## Performance & Scalability
 
-# AWS Configuration (for file storage)
-AWS_REGION=us-east-1
-AWS_S3_BUCKET=jobapp-documents-dev
-AWS_ACCESS_KEY_ID=your-access-key
-AWS_SECRET_ACCESS_KEY=your-secret-key
+### Frontend Optimization
+- **Next.js Features:** Automatic code splitting, image optimization
+- **Bundle Analysis:** Webpack bundle analyzer for size optimization
+- **Caching:** Static generation and incremental static regeneration
+- **Performance Monitoring:** Core Web Vitals tracking
 
-# External Service APIs
-LINKEDIN_API_KEY=your-linkedin-key
-INDEED_API_KEY=your-indeed-key
+### Backend Optimization
+- **Async Operations:** Full async/await support for I/O operations
+- **Database Optimization:** Connection pooling, query optimization
+- **Caching Strategy:** Multi-level caching with Redis
+- **Background Processing:** Celery for non-blocking operations
 
-# Browser Automation
-PLAYWRIGHT_BROWSER_PATH=/usr/bin/chromium
-USER_DATA_DIR=/tmp/playwright-profiles
-```
+### Scalability Considerations
+- **Horizontal Scaling:** Stateless API design for easy scaling
+- **Database Scaling:** Read replicas and connection pooling
+- **Caching Strategy:** Distributed caching with Redis
+- **Load Balancing:** Application-level load balancing
 
-#### Production Environment
-```env
-# Production settings
-ENVIRONMENT=production
-DEBUG=false
-LOG_LEVEL=info
+## Security Considerations
 
-# Production URLs
-API_HOST=0.0.0.0
-FRONTEND_URL=https://app.jobapplyai.com
+### Frontend Security
+- **Content Security Policy:** Strict CSP headers
+- **Input Validation:** Client-side validation with Zod schemas
+- **Authentication:** Secure token storage and refresh mechanisms
+- **HTTPS:** Enforced HTTPS in production
 
-# Production Database (AWS RDS)
-DATABASE_URL=postgresql://user:password@jobapp-prod.xyz.rds.amazonaws.com:5432/jobapp
-REDIS_URL=redis://jobapp-prod.xyz.cache.amazonaws.com:6379
+### Backend Security
+- **Authentication:** JWT with secure token handling
+- **Authorization:** Role-based access control (RBAC)
+- **Input Validation:** Pydantic models for request validation
+- **SQL Injection:** Parameterized queries with SQLAlchemy
+- **Rate Limiting:** API rate limiting and abuse prevention
 
-# Production Security
-JWT_SECRET_KEY=${AWS_SECRET_MANAGER_JWT_KEY}
-ENCRYPTION_KEY=${AWS_SECRET_MANAGER_ENCRYPTION_KEY}
+### Infrastructure Security
+- **Network Security:** VPC with security groups
+- **Secrets Management:** Environment-based configuration
+- **SSL/TLS:** End-to-end encryption
+- **Monitoring:** Security event logging and alerting
 
-# Production File Storage
-AWS_S3_BUCKET=jobapp-documents-prod
-```
+## Testing Strategy
 
-## Deployment
+### Frontend Testing
+- **Unit Tests:** Component testing with React Testing Library
+- **Integration Tests:** API integration testing
+- **E2E Tests:** Playwright for end-to-end testing
+- **Type Checking:** TypeScript strict mode validation
 
-### Development Environment (Active)
-- **Frontend:** http://localhost:3000 (React + Vite dev server) ✅ **RUNNING**
-- **API Gateway:** http://localhost:8000 (FastAPI with hot reload) ✅ **RUNNING**
-- **Database:** PostgreSQL with pgvector on http://localhost:5432 ✅ **HEALTHY**
-- **Cache:** Redis on http://localhost:6379 ✅ **HEALTHY**
-- **Deployment:** Docker Compose for infrastructure, npm/uvicorn for development servers
-- **Status:** All services healthy and verified working
+### Backend Testing
+- **Unit Tests:** Pytest for function and class testing
+- **Integration Tests:** Database and API integration testing
+- **Performance Tests:** Load testing with async operations
+- **Security Tests:** Authentication and authorization testing
 
-### Staging Environment
-- **Platform:** AWS ECS with Fargate
-- **Infrastructure:** RDS PostgreSQL, ElastiCache Redis, S3 for file storage
-- **Deployment:** GitHub Actions CI/CD with automated testing
+## Deployment Strategy
+
+### Development Environment
+- **Local Development:** Docker Compose for full stack
+- **Hot Reloading:** Next.js and FastAPI development servers
+- **Database:** Local PostgreSQL with pgvector
+- **Caching:** Local Redis instance
 
 ### Production Environment
-- **Target Platform:** AWS ECS/Fargate with auto-scaling
-- **Infrastructure:** Multi-AZ RDS, ElastiCache cluster, CloudFront CDN
-- **Deployment:** Blue-green deployment with health checks and rollback capabilities
+- **Container Orchestration:** AWS ECS with Fargate
+- **Database:** AWS RDS with PostgreSQL
+- **Caching:** AWS ElastiCache with Redis
+- **Storage:** AWS S3 for file storage
+- **CDN:** CloudFront for static assets
+- **Monitoring:** CloudWatch with custom dashboards
 
-## External Services & APIs
-- **OpenAI GPT-4:** Cover letter generation and content creation
-- **LinkedIn API:** Job discovery and profile integration (where available)
-- **Indeed API:** Job aggregation and posting details
-- **AWS Services:** S3 (file storage), RDS (database), ElastiCache (Redis), CloudWatch (monitoring)
-- **Sentry:** Error tracking and performance monitoring
-- **SendGrid:** Email notifications and transactional emails
+## Migration Notes
 
-## Performance Considerations
+### Recent Changes (July 2024)
+- **Frontend Migration:** Successfully migrated from Vite to Next.js 14
+- **Build System:** Resolved critical "can't detect preamble" error
+- **Node.js Version:** Updated to Node.js 20 LTS for better compatibility
+- **Routing:** Migrated from React Router to Next.js App Router
+- **Configuration:** Updated PostCSS and TypeScript configs for Next.js
 
-### Application Performance
-- **API Response Time:** <2 seconds for all endpoints
-- **Job Discovery:** Process 100+ jobs per minute per platform
-- **Resume Processing:** Parse and tailor resume in <30 seconds
-- **Cover Letter Generation:** Generate personalized content in <10 seconds
-
-### Scalability Strategies
-- **Horizontal Service Scaling:** Independent scaling based on load patterns
-- **Database Optimization:** Connection pooling, query optimization, read replicas
-- **Caching Strategy:** Redis for API responses, browser cache for static assets
-- **Queue Management:** Celery workers for background task processing
-
-### Browser Automation Performance
-- **Concurrent Sessions:** Support 10+ simultaneous browser instances per service
-- **Resource Management:** Automatic browser cleanup and memory management
-- **Anti-Detection:** Human-like timing patterns and fingerprint rotation
-
-## Technology Decision Rationale
-
-### Why This Stack?
-- **Python FastAPI:** Superior ML/NLP ecosystem integration with async support for web scraping
-- **React TypeScript:** Complex UI requirements with type safety for API integrations
-- **PostgreSQL:** Complex relational data with JSON support for flexible job posting storage
-- **Playwright:** Modern anti-detection capabilities crucial for reliable automation
-- **Redis + Celery:** Battle-tested task queue system for background job processing
-
-### Alternative Considerations
-- **Node.js Backend:** Considered but Python's ML ecosystem is superior for our use case
-- **Vue.js Frontend:** Considered but React ecosystem and team familiarity won out
-- **MongoDB:** Considered but relational data patterns and consistency requirements favor PostgreSQL
-- **Selenium:** Considered but Playwright offers better modern web app support
-
-### Trade-offs Made
-- **Development Speed vs. Performance:** Chose Python for rapid ML integration despite GIL limitations
-- **Complexity vs. Flexibility:** Microservices architecture adds complexity but enables independent scaling
-- **Cost vs. Quality:** Hybrid local/cloud ML approach balances OpenAI costs with processing speed
+### Benefits of Next.js Migration
+- **Better React Integration:** Native React support without plugin conflicts
+- **Improved Performance:** Built-in optimizations and code splitting
+- **Enhanced Developer Experience:** Better TypeScript support and debugging
+- **Production Ready:** Optimized build process and deployment
+- **File-based Routing:** Simpler and more intuitive routing system
 
 ---
 *Technology choices are documented in docs/technical-decisions.md and should be reviewed quarterly for optimization opportunities.* 

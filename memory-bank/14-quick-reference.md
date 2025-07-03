@@ -1,474 +1,400 @@
 # Quick Reference Guide
 
-## AI Population Instructions
-When working with this template:
-- Replace `[technology-specific]` placeholders with actual commands, tools, and references
-- Adapt the file structure and command examples to match your chosen technology stack
-- Update glossary terms to reflect your project's domain and technical choices
-- Maintain the quick reference format while customizing content for easy developer lookup
+## Project Overview
+**Project Name:** Job Application Assistance System  
+**Current Status:** ✅ **FRONTEND WORKING** - Next.js migration complete  
+**Last Updated:** July 2024  
+**Phase:** Sprint 0 Complete - Foundation Ready
 
-## Project Glossary
+## Key Technologies
+- **Frontend:** Next.js 14.2.30 + TypeScript + Tailwind CSS
+- **Backend:** FastAPI + Python 3.11+ + PostgreSQL + Redis
+- **Infrastructure:** Docker Compose + AWS (production ready)
+- **AI/ML:** OpenAI GPT-4 + pgvector for semantic search
 
-### Technical Terms
-- **ADR:** Architectural Decision Record - Documents important technical decisions
-- **API:** Application Programming Interface - Service communication layer
-- **CRUD:** Create, Read, Update, Delete operations
-- **CI/CD:** Continuous Integration/Continuous Deployment
-- **JWT:** JSON Web Token - Authentication mechanism for stateless sessions
-- **pgvector:** PostgreSQL extension for vector similarity search
-- **ATS:** Applicant Tracking System - Software used by companies to manage job applications
+## Quick Start Commands
 
-### Business/Domain Terms
-- **Job Discovery:** Automated process of finding relevant job postings across multiple platforms
-- **Resume Tailoring:** Dynamic modification of resume content to match specific job requirements
-- **Semantic Matching:** AI-powered similarity comparison between user skills and job requirements
-- **Application Automation:** Automated submission of job applications through browser automation
-- **Cover Letter Generation:** AI-powered creation of personalized cover letters
+### Development Environment
+```bash
+# Start all services (database, Redis)
+docker-compose up -d postgres redis
 
-### Project-Specific Terms
-- **Job Card:** UI component displaying job posting information with actions
-- **Application Pipeline:** End-to-end workflow from job discovery to application submission
-- **Vector Embedding:** Numerical representation of text for semantic similarity calculations
-- **Stealth Browser:** Browser automation with anti-detection measures
-- **Application Status:** Current state of a job application (pending, submitted, interviewed, etc.)
+# Frontend (Next.js)
+cd apps/web-frontend
+npm install
+npm run dev  # http://localhost:3000
 
-## Key File Locations
-
-### Configuration Files
-```
-├── .env.example                    # Environment variables template
-├── .gitignore                      # Version control ignore rules
-├── docker-compose.yml              # Local development services
-├── package.json                    # Frontend dependencies and scripts
-├── pyproject.toml                  # Python project configuration (Poetry)
-├── tailwind.config.js              # Tailwind CSS configuration
-├── eslint.config.js                # ESLint configuration
-├── vitest.config.ts                # Testing configuration
-└── tsconfig.json                   # TypeScript configuration
+# Backend (FastAPI)
+cd apps/api-gateway
+poetry install
+poetry run uvicorn app.main:app --reload  # http://localhost:8000
 ```
 
-### Source Code Structure
-```
-apps/
-├── web-frontend/                   # React TypeScript application
-│   ├── src/
-│   │   ├── components/             # Reusable UI components
-│   │   │   ├── ui/                 # Basic UI elements (shadcn/ui)
-│   │   │   ├── job/                # Job-related components
-│   │   │   └── application/        # Application management components
-│   │   ├── pages/                  # Page/route components
-│   │   ├── hooks/                  # Custom React hooks
-│   │   ├── services/               # API client services
-│   │   ├── stores/                 # Zustand state stores
-│   │   ├── utils/                  # Utility functions
-│   │   ├── types/                  # TypeScript type definitions
-│   │   └── constants/              # Application constants
-│   └── public/                     # Static assets
-└── api-gateway/                    # FastAPI gateway service
-    ├── app/
-    │   ├── routers/                # API route handlers
-    │   ├── middleware/             # Authentication, CORS, etc.
-    │   ├── models/                 # Pydantic models
-    │   ├── core/                   # Configuration and utilities
-    │   └── deps/                   # Dependency injection
-    └── requirements.txt            # Python dependencies
+### Database Setup
+```bash
+# Initialize database with extensions
+docker exec -it jobapp-postgres-1 psql -U postgres -d jobapp -f /docker-entrypoint-initdb.d/init-extensions.sql
+docker exec -it jobapp-postgres-1 psql -U postgres -d jobapp -f /docker-entrypoint-initdb.d/init-db.sql
 ```
 
-### Backend Services Structure
+### Project Setup
+```bash
+# Run automated setup script
+./scripts/setup-dev.sh
+
+# Install all dependencies
+npm install  # Frontend
+poetry install  # Backend services
+```
+
+## File Structure Quick Reference
+
+### Frontend (Next.js)
+```
+apps/web-frontend/
+├── app/                    # Next.js app directory (routing)
+│   ├── layout.tsx         # Root layout
+│   ├── page.tsx           # Dashboard page
+│   ├── jobs/page.tsx      # Jobs page
+│   ├── applications/page.tsx  # Applications page
+│   └── profile/page.tsx   # Profile page
+├── src/
+│   ├── components/        # UI components
+│   │   ├── ui/           # shadcn/ui components
+│   │   └── Layout.tsx    # Main layout
+│   ├── pages/            # Page components (legacy)
+│   ├── stores/           # Zustand state stores
+│   ├── services/         # API services
+│   └── types/            # TypeScript types
+├── next.config.js        # Next.js configuration
+├── tailwind.config.js    # Tailwind CSS config
+└── package.json          # Dependencies
+```
+
+### Backend (FastAPI)
+```
+apps/api-gateway/
+├── app/
+│   ├── main.py           # FastAPI application
+│   ├── core/             # Configuration & database
+│   ├── routers/          # API routes
+│   ├── models/           # Pydantic models
+│   └── middleware/       # CORS, logging, etc.
+├── pyproject.toml        # Python dependencies
+└── Dockerfile.dev        # Development container
+```
+
+### Services
 ```
 services/
-├── job-discovery/                  # Job scraping and aggregation
-│   ├── scrapers/                   # Platform-specific scrapers
-│   ├── processors/                 # Data processing and deduplication
-│   └── models/                     # Job data models
-├── resume-processor/               # Resume parsing and tailoring
-│   ├── parsers/                    # Document parsing utilities
-│   ├── analyzers/                  # Skills and experience analysis
-│   └── generators/                 # Tailored resume generation
-├── cover-letter-gen/               # AI-powered cover letter service
-│   ├── generators/                 # Content generation logic
-│   ├── research/                   # Company research utilities
-│   └── templates/                  # Letter templates and styles
-└── automation-engine/              # Browser automation service
-    ├── drivers/                    # Browser automation drivers
-    ├── platforms/                  # ATS-specific automation
-    └── anti-detection/             # Anti-bot detection measures
+├── job-discovery/        # Job scraping & aggregation
+├── resume-processor/     # Resume parsing & tailoring
+├── cover-letter-gen/     # AI cover letter generation
+└── automation-engine/    # Browser automation
 ```
 
-### Documentation
-```
-├── README.md                      # Project overview and setup
-├── docs/                          # Additional documentation
-├── memory-bank/                   # AI Memory Bank (this system)
-│   ├── 00-index.md               # Memory Bank navigation
-│   ├── 01-productVision.md       # Product goals and vision
-│   ├── 02-techContext.md         # Technology stack details
-│   └── ...                       # Other Memory Bank files
-└── CHANGELOG.md                   # Version history
+## Key Configuration Files
+
+### Frontend Configuration
+- **`next.config.js`** - Next.js settings, API proxy
+- **`tailwind.config.js`** - Tailwind CSS theme & plugins
+- **`tsconfig.json`** - TypeScript configuration
+- **`package.json`** - Dependencies & scripts
+
+### Backend Configuration
+- **`pyproject.toml`** - Python dependencies & project settings
+- **`alembic.ini`** - Database migration configuration
+- **`.env`** - Environment variables
+
+### Infrastructure
+- **`docker-compose.yml`** - Development environment
+- **`scripts/init-db.sql`** - Database initialization
+- **`scripts/init-extensions.sql`** - PostgreSQL extensions
+
+## Environment Variables
+
+### Required Environment Variables
+```env
+# Database
+DATABASE_URL=postgresql://postgres:password@localhost:5432/jobapp
+REDIS_URL=redis://localhost:6379/0
+
+# API Configuration
+API_HOST=localhost
+API_PORT=8000
+FRONTEND_URL=http://localhost:3000
+
+# Authentication
+JWT_SECRET_KEY=your-secret-key-here
+JWT_ALGORITHM=HS256
+
+# OpenAI (User Action Required)
+OPENAI_API_KEY=your-openai-api-key
+OPENAI_MODEL=gpt-4
+
+# AWS (User Action Required)
+AWS_REGION=us-east-1
+AWS_S3_BUCKET=jobapp-documents-dev
+AWS_ACCESS_KEY_ID=your-access-key
+AWS_SECRET_ACCESS_KEY=your-secret-key
 ```
 
 ## Common Commands
 
-### Development Commands
+### Frontend Development
 ```bash
-# Start development servers
-npm run dev                        # Start frontend development server
-poetry run uvicorn app.main:app --reload  # Start API gateway
-docker-compose up -d               # Start all development services
+# Start development server
+npm run dev
 
-# Building
-npm run build                      # Build frontend for production
-poetry run python -m build        # Build Python packages
+# Build for production
+npm run build
+
+# Start production server
+npm start
 
 # Type checking
-npm run type-check                 # Run TypeScript type checking
-npm run type-check:watch           # Run type checking in watch mode
-```
+npm run type-check
 
-### Testing Commands
-```bash
-# Run tests
-npm test                           # Run all frontend tests
-poetry run pytest                 # Run all backend tests
-npm run test:unit                  # Run unit tests only
-npm run test:e2e                   # Run end-to-end tests
-npm run test:watch                 # Run tests in watch mode
-npm run test:coverage              # Run tests with coverage report
-
-# Test specific files
-npm test JobCard                   # Test specific component
-poetry run pytest tests/api/test_auth.py  # Test specific backend module
-```
-
-### Code Quality Commands
-```bash
 # Linting
-npm run lint                       # Run ESLint
-npm run lint:fix                   # Fix linting issues automatically
-poetry run ruff check              # Run Python linting
+npm run lint
 
-# Formatting
-npm run format                     # Format code with Prettier
-npm run format:check               # Check if code is formatted
-poetry run black .                 # Format Python code
-poetry run isort .                 # Sort Python imports
-
-# Pre-commit checks
-npm run validate                   # Run all frontend checks
-poetry run pre-commit run --all-files  # Run Python pre-commit hooks
+# Format code
+npm run format
 ```
 
-### Database Commands
+### Backend Development
 ```bash
-# Migrations
-poetry run alembic upgrade head    # Run database migrations
-poetry run alembic revision --autogenerate -m "description"  # Create new migration
-poetry run alembic downgrade -1    # Rollback one migration
-poetry run alembic history         # View migration history
+# Start development server
+poetry run uvicorn app.main:app --reload
 
-# Database operations
-createdb jobapp_dev                # Create local database
-dropdb jobapp_dev                  # Drop local database
-psql jobapp_dev                    # Connect to database
+# Run tests
+poetry run pytest
+
+# Database migrations
+poetry run alembic upgrade head
+
+# Create new migration
+poetry run alembic revision --autogenerate -m "description"
 ```
 
-### Deployment Commands
+### Docker Commands
 ```bash
-# Production deployment
-docker build -t jobapp-frontend .  # Build frontend Docker image
-docker build -t jobapp-api .       # Build API Docker image
-docker-compose -f docker-compose.prod.yml up  # Deploy to production
+# Start all services
+docker-compose up -d
 
-# Environment management
-cp .env.example .env               # Set up environment variables
-docker-compose up -d postgres redis  # Start infrastructure services
+# View logs
+docker-compose logs -f
 
-# Health checks
-curl http://localhost:8000/health   # Check API health
-curl http://localhost:3000         # Check frontend health
+# Stop all services
+docker-compose down
+
+# Rebuild containers
+docker-compose build --no-cache
+
+# Access database
+docker exec -it jobapp-postgres-1 psql -U postgres -d jobapp
 ```
 
-## Environment Variables
+## API Endpoints
 
-### Required Variables
-```env
-# Database
-DATABASE_URL=postgresql://postgres:password@localhost:5432/jobapp_dev
-REDIS_URL=redis://localhost:6379/0
+### Health Checks
+- `GET /health` - Basic health check
+- `GET /health/detailed` - Detailed health with database/Redis status
 
-# Authentication
-JWT_SECRET_KEY=your-super-secret-jwt-key-change-in-production
-JWT_ALGORITHM=HS256
-JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+### Authentication (Planned)
+- `POST /auth/register` - User registration
+- `POST /auth/login` - User login
+- `POST /auth/refresh` - Token refresh
+- `GET /auth/me` - Current user info
 
-# Application
-ENVIRONMENT=development
-API_PORT=8000
-FRONTEND_URL=http://localhost:3000
+### Jobs (Planned)
+- `GET /jobs` - List jobs
+- `POST /jobs` - Create job
+- `GET /jobs/{id}` - Get job details
+- `PUT /jobs/{id}` - Update job
+- `DELETE /jobs/{id}` - Delete job
+
+### Applications (Planned)
+- `GET /applications` - List applications
+- `POST /applications` - Create application
+- `GET /applications/{id}` - Get application details
+- `PUT /applications/{id}` - Update application
+
+## Database Schema
+
+### Core Tables (Planned)
+```sql
+-- Users table
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Jobs table
+CREATE TABLE jobs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title VARCHAR(255) NOT NULL,
+    company VARCHAR(255) NOT NULL,
+    location VARCHAR(255),
+    description TEXT,
+    url VARCHAR(500),
+    user_id UUID REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Applications table
+CREATE TABLE applications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    job_id UUID REFERENCES jobs(id),
+    user_id UUID REFERENCES users(id),
+    status VARCHAR(50) DEFAULT 'applied',
+    applied_at TIMESTAMP DEFAULT NOW(),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
 ```
 
-### Optional Variables
-```env
-# External Services
-OPENAI_API_KEY=your-openai-api-key
-AWS_ACCESS_KEY_ID=your-aws-access-key
-AWS_SECRET_ACCESS_KEY=your-aws-secret-key
-AWS_S3_BUCKET=jobapp-documents-dev
-
-# Development
-DEBUG=true
-LOG_LEVEL=debug
-HEADLESS_MODE=true
-
-# Browser Automation
-PLAYWRIGHT_BROWSER_PATH=/usr/bin/chromium
-USER_DATA_DIR=/tmp/playwright-profiles
-```
-
-## Troubleshooting Guide
+## Troubleshooting
 
 ### Common Issues
 
-#### Port Already in Use
-```bash
-# Find process using port
-lsof -i :3000                     # macOS/Linux
-netstat -ano | findstr :3000      # Windows
+#### Frontend Issues
+- **"can't detect preamble" error** - ✅ **RESOLVED** - Migrated to Next.js
+- **Port conflicts** - Change port in `next.config.js` or kill existing process
+- **TypeScript errors** - Run `npm run type-check` to identify issues
+- **Styling issues** - Check Tailwind CSS configuration and imports
 
-# Kill the process
-kill -9 $(lsof -t -i:3000)        # macOS/Linux
-taskkill /PID <process-id> /F      # Windows
+#### Backend Issues
+- **Database connection** - Ensure PostgreSQL is running: `docker-compose up -d postgres`
+- **Redis connection** - Ensure Redis is running: `docker-compose up -d redis`
+- **Port conflicts** - Change API_PORT in environment or kill existing process
+- **Import errors** - Run `poetry install` to install dependencies
 
-# Alternative: Use different port
-VITE_PORT=3001 npm run dev
-```
-
-#### Dependencies Issues
-```bash
-# Clear cache and reinstall
-rm -rf node_modules package-lock.json
-npm cache clean --force
-npm install
-
-# Python dependencies
-poetry cache clear . --all
-rm poetry.lock
-poetry install
-```
-
-#### Database Connection Issues
-```bash
-# Check database status
-docker-compose ps                  # Check if PostgreSQL is running
-psql -h localhost -U postgres -l  # List databases
-
-# Reset database
-dropdb jobapp_dev && createdb jobapp_dev
-poetry run alembic upgrade head
-```
-
-#### Build Failures
-```bash
-# Clear build cache
-rm -rf dist/ .vite/
-npm run clean
-
-# Check for linting errors
-npm run lint
-poetry run ruff check
-
-# Check dependencies
-npm audit
-npm audit fix
-```
-
-### Performance Issues
-```bash
-# Analyze bundle size
-npm run build
-npm run analyze                    # Bundle analyzer
-
-# Check for memory leaks
-npm run dev --profile
-
-# Database query performance
-EXPLAIN ANALYZE SELECT * FROM job_postings WHERE ...
-```
-
-## API Endpoints Reference
-
-### Authentication
-```
-POST   /api/v1/auth/login          # User login
-POST   /api/v1/auth/register       # User registration
-POST   /api/v1/auth/refresh        # Refresh token
-POST   /api/v1/auth/logout         # User logout
-GET    /api/v1/auth/me             # Get current user
-```
-
-### Jobs
-```
-GET    /api/v1/jobs                # List jobs
-POST   /api/v1/jobs/search         # Search jobs
-GET    /api/v1/jobs/{id}           # Get job by ID
-POST   /api/v1/jobs/{id}/save      # Save job
-DELETE /api/v1/jobs/{id}/save      # Unsave job
-```
-
-### Applications
-```
-GET    /api/v1/applications        # List user applications
-POST   /api/v1/applications        # Create application
-GET    /api/v1/applications/{id}   # Get application by ID
-PUT    /api/v1/applications/{id}   # Update application
-DELETE /api/v1/applications/{id}   # Delete application
-POST   /api/v1/applications/{id}/submit  # Submit application
-```
-
-### Users
-```
-GET    /api/v1/users/profile       # Get user profile
-PUT    /api/v1/users/profile       # Update user profile
-POST   /api/v1/users/resume        # Upload resume
-GET    /api/v1/users/preferences   # Get search preferences
-PUT    /api/v1/users/preferences   # Update search preferences
-```
-
-## Testing Utilities
-
-### Test Data Factories
-```typescript
-// Create test user
-const testUser = createTestUser({ 
-  email: 'test@example.com',
-  firstName: 'John',
-  lastName: 'Doe'
-});
-
-// Create test job
-const testJob = createTestJob({
-  title: 'Software Engineer',
-  company: 'Test Company',
-  location: 'San Francisco, CA'
-});
-```
-
-### Mock Functions
-```typescript
-// Mock API calls
-const mockJobApi = vi.mocked(jobApi);
-mockJobApi.searchJobs.mockResolvedValue({ data: [testJob] });
-
-// Mock React Query
-const mockUseQuery = vi.mocked(useQuery);
-mockUseQuery.mockReturnValue({ data: null, isLoading: false, error: null });
-```
-
-## Development Tools
-
-### IDE/Editor Shortcuts (VS Code)
-- **Cmd/Ctrl + P:** Quick file open
-- **Cmd/Ctrl + Shift + P:** Command palette
-- **Cmd/Ctrl + `:** Toggle terminal
-- **Cmd/Ctrl + B:** Toggle sidebar
-- **F12:** Go to definition
-- **Shift + F12:** Find references
-
-### Browser DevTools
-- **F12:** Toggle DevTools
-- **Cmd/Ctrl + Shift + C:** Inspect element
-- **Cmd/Ctrl + R:** Refresh page
-- **Cmd/Ctrl + Shift + R:** Hard refresh
+#### Docker Issues
+- **Container won't start** - Check logs: `docker-compose logs [service-name]`
+- **Volume permissions** - Ensure proper file permissions on mounted volumes
+- **Network issues** - Restart Docker: `docker-compose down && docker-compose up -d`
 
 ### Debug Commands
-```typescript
-// Check environment
-console.log('Environment:', import.meta.env.VITE_API_URL);
-
-// Debug React Query
-import { useQueryClient } from '@tanstack/react-query';
-const queryClient = useQueryClient();
-console.log('Query cache:', queryClient.getQueryCache());
-
-// Performance timing
-console.time('API Request');
-// ... code ...
-console.timeEnd('API Request');
-```
-
-## Platform-Specific Commands
-
-### macOS Development
 ```bash
-# Install dependencies
-brew install postgresql@15 redis
-brew services start postgresql@15
-brew services start redis
+# Check service status
+docker-compose ps
 
-# Python setup
-pyenv install 3.11.0
-pyenv local 3.11.0
+# View service logs
+docker-compose logs -f [service-name]
+
+# Check database connection
+docker exec -it jobapp-postgres-1 psql -U postgres -d jobapp -c "SELECT version();"
+
+# Check Redis connection
+docker exec -it jobapp-redis-1 redis-cli ping
+
+# Check frontend build
+cd apps/web-frontend && npm run build
+
+# Check backend startup
+cd apps/api-gateway && poetry run python -c "import app.main; print('Backend imports OK')"
 ```
 
-### Windows Development
-```cmd
-# Install dependencies with Chocolatey
-choco install postgresql redis-64
-choco install python --version=3.11.0
+## Development Workflow
 
-# Start services
-net start postgresql-x64-15
-net start Redis
-```
+### Feature Development
+1. **Create feature branch** - `git checkout -b feature/feature-name`
+2. **Frontend changes** - Edit components in `apps/web-frontend/src/`
+3. **Backend changes** - Edit API in `apps/api-gateway/app/`
+4. **Test changes** - Run tests and manual verification
+5. **Commit changes** - Use conventional commit format
+6. **Create PR** - Submit pull request for review
 
-### Linux Development
+### Code Quality
+- **TypeScript strict mode** - All frontend code must be type-safe
+- **ESLint rules** - Follow linting rules for consistent code style
+- **Prettier formatting** - Automatic code formatting on save
+- **Testing** - Write tests for new features and bug fixes
+
+### Git Workflow
 ```bash
-# Install dependencies (Ubuntu/Debian)
-sudo apt update
-sudo apt install postgresql-15 redis-server python3.11
-sudo systemctl start postgresql
-sudo systemctl start redis
+# Conventional commit format
+git commit -m "feat: add user authentication"
+git commit -m "fix: resolve frontend build error"
+git commit -m "docs: update API documentation"
+git commit -m "refactor: migrate to Next.js framework"
 ```
 
-## Contact Information
+## Performance Monitoring
 
-### Team Contacts
-- **Project Lead:** [Name] - [email]
-- **Tech Lead:** [Name] - [email]
-- **Frontend Lead:** [Name] - [email]
-- **Backend Lead:** [Name] - [email]
+### Frontend Performance
+- **Core Web Vitals** - Monitor LCP, FID, CLS
+- **Bundle size** - Use `npm run build` to check bundle size
+- **Lighthouse scores** - Run Lighthouse audits regularly
 
-### Resources
-- **Repository:** https://github.com/404FoundingFather/jobapp
-- **Documentation:** `/docs` folder in repository
-- **Issue Tracker:** GitHub Issues
-- **Team Communication:** [Slack/Discord/Teams channel]
+### Backend Performance
+- **API response times** - Monitor endpoint performance
+- **Database queries** - Use query logging and optimization
+- **Memory usage** - Monitor container resource usage
 
-## Project-Specific Notes
+### Infrastructure Monitoring
+- **Docker resource usage** - `docker stats`
+- **Database performance** - Monitor query execution times
+- **Redis performance** - Monitor cache hit rates
 
-### Important Conventions
-- **File Naming:** PascalCase for components, camelCase for utilities
-- **Component Structure:** One component per file, co-located tests
-- **State Management:** React Query for server state, Zustand for client state
-- **Testing Approach:** Test behavior, not implementation
+## Security Checklist
 
-### Performance Targets
-- **Page Load Time:** < 2 seconds
-- **API Response Time:** < 500ms average, < 2s 95th percentile
-- **Job Search Results:** < 1 second for 50+ jobs
-- **Application Processing:** < 30 seconds end-to-end
+### Frontend Security
+- ✅ **HTTPS enforcement** - Configured for production
+- ✅ **Content Security Policy** - Implemented in Next.js
+- ✅ **Input validation** - Zod schemas for form validation
+- ✅ **XSS protection** - React's built-in XSS protection
 
-### Known Limitations
-- **OpenAI API Costs:** Monitor usage to avoid budget overrun
-- **Browser Detection:** Some platforms may detect automation, requiring manual fallback
-- **Rate Limiting:** Job platforms may limit scraping frequency
-- **Vector Search:** Performance degrades with very large datasets (>1M jobs)
+### Backend Security
+- ✅ **JWT authentication** - Secure token handling
+- ✅ **Password hashing** - bcrypt for password security
+- ✅ **SQL injection protection** - Parameterized queries
+- ✅ **CORS configuration** - Proper CORS settings
 
-### Current Sprint Focus
-- **Sprint 0:** Infrastructure setup and environment configuration
-- **Priority:** Complete Docker development environment and external service integration
-- **Blockers:** OpenAI API approval, AWS account setup
-- **Next:** User management and job discovery service implementation
+### Infrastructure Security
+- ✅ **Environment variables** - Secure configuration management
+- ✅ **Docker security** - Non-root containers
+- ✅ **Network security** - VPC and security groups (production)
+- ✅ **SSL/TLS** - End-to-end encryption
+
+## Migration Notes
+
+### Recent Changes (July 2024)
+- ✅ **Frontend Migration** - Successfully migrated from Vite to Next.js 14
+- ✅ **Build System Fix** - Resolved critical "can't detect preamble" error
+- ✅ **Routing Update** - Migrated from React Router to Next.js App Router
+- ✅ **Component Updates** - Updated all components for Next.js compatibility
+
+### Benefits Achieved
+- **Better React Integration** - Native React support without plugin conflicts
+- **Improved Performance** - Built-in optimizations and code splitting
+- **Enhanced Developer Experience** - Better TypeScript support and debugging
+- **Production Ready** - Optimized build process and deployment
+- **File-based Routing** - Simpler and more intuitive routing system
+
+## Next Steps
+
+### Immediate Actions (User Required)
+1. **OpenAI API Key** - Obtain API key for AI features
+2. **AWS Setup** - Configure AWS account for production deployment
+3. **Environment Configuration** - Add API keys to `.env` file
+
+### Development Priorities
+1. **User Authentication** - Implement JWT-based authentication
+2. **Database Schema** - Create and migrate database tables
+3. **API Integration** - Connect frontend to backend APIs
+4. **Job Management** - Implement job CRUD operations
+
+### Production Deployment
+1. **AWS Infrastructure** - Deploy to ECS/Fargate
+2. **Database Migration** - Set up RDS with production data
+3. **Monitoring Setup** - Configure CloudWatch and logging
+4. **SSL/TLS** - Set up HTTPS with ACM certificates
 
 ---
 *This quick reference should be updated as the project evolves. Keep it current with the most frequently used commands, patterns, and project-specific information.* 

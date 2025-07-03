@@ -19,16 +19,16 @@
 │                                                                 │
 │  ┌─────────────┐    ┌─────────────────────┐    ┌─────────────┐ │
 │  │Job Platforms│◄──►│  Job Application    │◄──►│ATS Platforms│ │
-│  │             │    │     System          │    │             │ │
+│  │             │    │     System          │    │             │
 │  │ • LinkedIn  │    │                     │    │ • Workday   │ │
 │  │ • Indeed    │    │ ┌─────────────────┐ │    │ • Greenhouse│ │
 │  │ • Glassdoor │    │ │   Web Dashboard │ │    │ • BambooHR  │ │
-│  │ • AngelList │    │ │   (React TS)    │ │    │ • Lever     │ │
+│  │ • AngelList │    │ │   (Next.js TS)  │ │    │ • Lever     │ │
 │  └─────────────┘    │ └─────────────────┘ │    └─────────────┘ │
 │                     │                     │                    │
 │  ┌─────────────┐    │ ┌─────────────────┐ │    ┌─────────────┐ │
 │  │AI Services  │◄──►│ │  Microservices  │ │◄──►│   Storage   │ │
-│  │             │    │ │   Architecture  │ │    │             │ │
+│  │             │    │ │   Architecture  │ │    │             │
 │  │ • OpenAI    │    │ │                 │ │    │ • AWS RDS   │ │
 │  │ • GPT-4     │    │ └─────────────────┘ │    │ • Redis     │ │
 │  │ • Embeddings│    │                     │    │ • S3        │ │
@@ -51,7 +51,7 @@
 │                          Frontend Layer                                      │
 │  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐          │
 │  │   Web App       │    │   Mobile Web    │    │   Admin Panel   │          │
-│  │  (React TS)     │    │  (Responsive)   │    │  (Analytics)    │          │
+│  │  (Next.js TS)   │    │  (Responsive)   │    │  (Analytics)    │          │
 │  └─────────────────┘    └─────────────────┘    └─────────────────┘          │
 └──────────────────────────────┬───────────────────────────────────────────────┘
                                │ HTTPS/WebSocket
@@ -353,113 +353,3 @@ System Performance Metrics:
 └─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
      TTL: 5min          TTL: 24h           TTL: 1h           Optimized
 ```
-
-#### **Scaling & Load Management**
-- **Horizontal Pod Autoscaling:** CPU >70% or memory >80% triggers scale-out
-- **Service-Specific Scaling:** Job discovery (CPU-bound), resume processing (I/O-bound)
-- **Database Scaling:** Read replicas for queries, connection pooling for efficiency
-- **Queue Management:** Priority queues for time-sensitive tasks, bulk processing for batch jobs
-
----
-
-## Integration Architecture
-
-### External Platform Integration Strategy
-```
-┌─────────────────────────────────────────────────────────────┐
-│                Platform Integration Layer                    │
-│                                                             │
-│ ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
-│ │    Job      │  │     ATS     │  │     AI      │          │
-│ │ Platforms   │  │  Platforms  │  │  Services   │          │
-│ │             │  │             │  │             │          │
-│ │ • LinkedIn  │  │ • Workday   │  │ • OpenAI    │          │
-│ │ • Indeed    │  │ • Greenhouse│  │ • Hugging F │          │
-│ │ • Glassdoor │  │ • BambooHR  │  │ • Anthropic │          │
-│ │ • AngelList │  │ • Lever     │  │ • Local LLM │          │
-│ └─────────────┘  └─────────────┘  └─────────────┘          │
-│        │                │                │                 │
-│        ▼                ▼                ▼                 │
-│ ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
-│ │  Scraping   │  │ Automation  │  │    API      │          │
-│ │  Adapters   │  │  Drivers    │  │  Clients    │          │
-│ └─────────────┘  └─────────────┘  └─────────────┘          │
-│        │                │                │                 │
-│        └────────────────┼────────────────┘                 │
-│                         ▼                                  │
-│ ┌─────────────────────────────────────────────────────┐    │
-│ │          Integration Orchestration Layer           │    │
-│ │                                                    │    │
-│ │ • Circuit Breakers    • Retry Logic               │    │
-│ │ • Rate Limiting       • Error Handling            │    │
-│ │ • Health Monitoring   • Fallback Strategies       │    │
-│ └─────────────────────────────────────────────────────┘    │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Integration Resilience Patterns
-- **Circuit Breaker Pattern:** Fail fast when external services are down
-- **Retry with Exponential Backoff:** Handle transient failures gracefully
-- **Fallback Strategies:** Graceful degradation when services are unavailable
-- **Health Check Monitoring:** Continuous monitoring of external service availability
-
----
-
-## Operational Architecture
-
-### Observability & Monitoring Stack
-```
-┌─────────────────────────────────────────────────────────────┐
-│                   Observability Platform                    │
-│                                                             │
-│ ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
-│ │   Metrics   │  │    Logs     │  │   Traces    │          │
-│ │             │  │             │  │             │          │
-│ │ • Prometheus│  │ • ELK Stack │  │ • Jaeger    │          │
-│ │ • Grafana   │  │ • CloudWatch│  │ • OpenTel   │          │
-│ │ • CloudWatch│  │ • Structured│  │ • APM       │          │
-│ └─────────────┘  └─────────────┘  └─────────────┘          │
-│        │                │                │                 │
-│        └────────────────┼────────────────┘                 │
-│                         ▼                                  │
-│ ┌─────────────────────────────────────────────────────┐    │
-│ │              Alerting & Incident Response          │    │
-│ │                                                    │    │
-│ │ • PagerDuty          • Slack Integration          │    │
-│ │ • Alert Manager      • Escalation Policies        │    │
-│ │ • SLA Monitoring     • Post-Incident Reviews      │    │
-│ └─────────────────────────────────────────────────────┘    │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### DevOps & Deployment Pipeline
-- **GitOps Workflow:** Infrastructure and application deployments via Git
-- **Blue-Green Deployments:** Zero-downtime deployments with instant rollback
-- **Feature Flags:** LaunchDarkly for progressive feature rollouts and A/B testing
-- **Automated Testing:** Comprehensive test suites in CI/CD pipeline
-
----
-
-## Architecture Evolution & Future Considerations
-
-### Scalability Roadmap
-1. **Phase 1 (0-1K users):** Single-region deployment with basic scaling
-2. **Phase 2 (1K-10K users):** Multi-AZ deployment with read replicas
-3. **Phase 3 (10K-100K users):** Multi-region with edge computing
-4. **Phase 4 (100K+ users):** Global distribution with service mesh
-
-### Technology Evolution Path
-- **Service Mesh Adoption:** Istio for advanced traffic management and security
-- **Serverless Integration:** AWS Lambda for specific workloads and cost optimization
-- **Edge Computing:** CloudFront Functions for geo-distributed processing
-- **ML Pipeline Enhancement:** MLOps platform for model training and deployment
-
-### Architecture Debt Management
-- **Service Boundary Refinement:** Ongoing evaluation of service responsibilities
-- **Data Consistency Optimization:** Evolution toward eventual consistency where appropriate
-- **Legacy System Integration:** Phased migration strategies for technology updates
-- **Performance Optimization:** Continuous profiling and optimization of critical paths
-
----
-
-*This architecture document represents the current system design and should be reviewed quarterly to ensure alignment with business goals and technical evolution. All architectural decisions should be validated through load testing, security audits, and user feedback before implementation.* 

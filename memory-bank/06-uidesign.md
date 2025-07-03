@@ -1,3 +1,432 @@
+# UI Design & Frontend Architecture
+
+## Frontend Technology Stack
+
+### Core Framework
+- **Next.js 14.2.30** - React framework with app directory structure
+- **TypeScript 5.0+** - Type-safe development with strict mode
+- **Tailwind CSS 3.3+** - Utility-first CSS framework
+- **shadcn/ui** - High-quality component library built on Radix UI
+
+### State Management & Data
+- **Zustand 4.4+** - Lightweight state management for client-side state
+- **TanStack React Query 5.0+** - Server state management and caching
+- **React Hook Form 7.48+** - Performant forms with validation
+- **Zod 3.22+** - TypeScript-first schema validation
+
+### UI Components & Styling
+- **Radix UI** - Unstyled, accessible component primitives
+- **Lucide React** - Beautiful, customizable icons
+- **Class Variance Authority (CVA)** - Type-safe component variants
+- **Tailwind Merge** - Intelligent class merging utility
+
+### Development Tools
+- **ESLint** - Code linting and quality enforcement
+- **Prettier** - Code formatting
+- **TypeScript** - Static type checking
+- **Next.js App Router** - File-based routing system
+
+## Project Structure
+
+### Next.js App Directory Structure
+```
+apps/web-frontend/
+├── app/                          # Next.js 13+ app directory
+│   ├── layout.tsx               # Root layout with metadata
+│   ├── page.tsx                 # Home page (Dashboard)
+│   ├── jobs/
+│   │   └── page.tsx            # Jobs page
+│   ├── applications/
+│   │   └── page.tsx            # Applications page
+│   └── profile/
+│       └── page.tsx            # Profile page
+├── src/
+│   ├── components/              # Reusable UI components
+│   │   ├── ui/                 # shadcn/ui components
+│   │   │   ├── button.tsx
+│   │   │   ├── card.tsx
+│   │   │   └── avatar.tsx
+│   │   ├── Layout.tsx          # Main layout component
+│   │   └── user/
+│   │       └── UserAvatar.tsx
+│   ├── pages/                   # Page components (legacy structure)
+│   │   ├── Dashboard.tsx
+│   │   ├── Jobs.tsx
+│   │   ├── Applications.tsx
+│   │   └── Profile.tsx
+│   ├── hooks/                   # Custom React hooks
+│   ├── stores/                  # Zustand state stores
+│   ├── services/                # API client services
+│   ├── types/                   # TypeScript type definitions
+│   ├── lib/                     # Utility functions
+│   │   └── utils.ts            # Common utilities (cn function)
+│   └── index.css               # Global styles
+├── public/                      # Static assets
+├── next.config.js              # Next.js configuration
+├── tailwind.config.js          # Tailwind CSS configuration
+├── tsconfig.json               # TypeScript configuration
+└── package.json                # Dependencies and scripts
+```
+
+## Component Architecture
+
+### Design System Principles
+1. **Accessibility First** - All components built on Radix UI primitives
+2. **Type Safety** - Full TypeScript integration with strict mode
+3. **Consistency** - Unified design tokens and spacing system
+4. **Reusability** - Modular components with clear interfaces
+5. **Performance** - Optimized rendering and bundle splitting
+
+### Component Categories
+
+#### 1. UI Primitives (shadcn/ui)
+- **Button** - Primary, secondary, outline, ghost variants
+- **Card** - Content containers with consistent spacing
+- **Avatar** - User profile images with fallbacks
+- **Dialog** - Modal dialogs and overlays
+- **Dropdown Menu** - Context menus and navigation
+- **Select** - Form select components
+- **Toast** - Notification system
+
+#### 2. Layout Components
+- **Layout** - Main application layout with navigation
+- **Navigation** - Header navigation with active states
+- **Sidebar** - Collapsible sidebar navigation
+- **Footer** - Application footer
+
+#### 3. Page Components
+- **Dashboard** - Main application dashboard
+- **Jobs** - Job listing and management
+- **Applications** - Application tracking
+- **Profile** - User profile management
+
+#### 4. Form Components
+- **Form Fields** - Input, textarea, select components
+- **Form Validation** - Error states and validation messages
+- **Form Layout** - Consistent form spacing and alignment
+
+## Styling System
+
+### Tailwind CSS Configuration
+```javascript
+// tailwind.config.js
+module.exports = {
+  content: [
+    './src/**/*.{js,ts,jsx,tsx}',
+    './app/**/*.{js,ts,jsx,tsx}',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+      },
+    },
+  },
+  plugins: [require("tailwindcss-animate")],
+}
+```
+
+### CSS Variables (Design Tokens)
+```css
+/* src/index.css */
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --primary: 222.2 47.4% 11.2%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222.2 84% 4.9%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96%;
+  --accent-foreground: 222.2 84% 4.9%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 222.2 84% 4.9%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222.2 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 210 40% 98%;
+  --primary-foreground: 222.2 47.4% 11.2%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 212.7 26.8% 83.9%;
+}
+```
+
+## Component Examples
+
+### Button Component
+```typescript
+// src/components/ui/button.tsx
+import React from 'react'
+import { cn } from '../../lib/utils'
+
+const Button = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement>>(
+  (props, ref) => {
+    return (
+      <button
+        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
+
+Button.displayName = 'Button'
+
+export { Button }
+```
+
+### Layout Component
+```typescript
+// src/components/Layout.tsx
+'use client'
+
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { Button } from '../components/ui/button'
+import { UserAvatar } from './user/UserAvatar'
+
+interface LayoutProps {
+  children: React.ReactNode
+}
+
+export default function Layout({ children }: LayoutProps) {
+  const pathname = usePathname()
+
+  const isActive = (path: string) => {
+    return pathname === path
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        {/* Navigation content */}
+      </header>
+      <main>
+        {children}
+      </main>
+    </div>
+  )
+}
+```
+
+## Routing & Navigation
+
+### Next.js App Router Structure
+- **File-based Routing** - Automatic route generation based on file structure
+- **Layout Nesting** - Shared layouts with nested routing
+- **Dynamic Routes** - Parameter-based routing for dynamic content
+- **Loading States** - Built-in loading UI for route transitions
+
+### Navigation Patterns
+- **Active States** - Visual feedback for current page
+- **Breadcrumbs** - Hierarchical navigation context
+- **Mobile Responsive** - Collapsible navigation for mobile devices
+- **Accessibility** - Keyboard navigation and screen reader support
+
+## State Management
+
+### Client State (Zustand)
+```typescript
+// src/stores/userStore.ts
+import { create } from 'zustand'
+
+interface UserState {
+  user: User | null
+  setUser: (user: User | null) => void
+  isAuthenticated: boolean
+}
+
+export const useUserStore = create<UserState>((set) => ({
+  user: null,
+  setUser: (user) => set({ user, isAuthenticated: !!user }),
+  isAuthenticated: false,
+}))
+```
+
+### Server State (React Query)
+```typescript
+// src/hooks/useJobs.ts
+import { useQuery } from '@tanstack/react-query'
+import { fetchJobs } from '../services/api'
+
+export const useJobs = () => {
+  return useQuery({
+    queryKey: ['jobs'],
+    queryFn: fetchJobs,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
+}
+```
+
+## Form Handling
+
+### React Hook Form with Zod
+```typescript
+// src/components/JobForm.tsx
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+
+const jobSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  company: z.string().min(1, 'Company is required'),
+  location: z.string().optional(),
+})
+
+type JobFormData = z.infer<typeof jobSchema>
+
+export function JobForm() {
+  const form = useForm<JobFormData>({
+    resolver: zodResolver(jobSchema),
+  })
+
+  return (
+    <form onSubmit={form.handleSubmit(onSubmit)}>
+      {/* Form fields */}
+    </form>
+  )
+}
+```
+
+## Performance Optimization
+
+### Next.js Optimizations
+- **Automatic Code Splitting** - Route-based code splitting
+- **Image Optimization** - Next.js Image component with optimization
+- **Static Generation** - Pre-rendered pages for better performance
+- **Incremental Static Regeneration** - Dynamic content with static benefits
+
+### Bundle Optimization
+- **Tree Shaking** - Unused code elimination
+- **Dynamic Imports** - Lazy loading of components
+- **Bundle Analysis** - Webpack bundle analyzer for size monitoring
+
+## Accessibility
+
+### WCAG 2.1 Compliance
+- **Keyboard Navigation** - Full keyboard accessibility
+- **Screen Reader Support** - Proper ARIA labels and roles
+- **Color Contrast** - WCAG AA contrast ratios
+- **Focus Management** - Visible focus indicators
+
+### Component Accessibility
+- **Semantic HTML** - Proper HTML structure
+- **ARIA Labels** - Descriptive labels for screen readers
+- **Focus Traps** - Modal and dialog focus management
+- **Skip Links** - Keyboard navigation shortcuts
+
+## Responsive Design
+
+### Breakpoint Strategy
+- **Mobile First** - Design for mobile, enhance for desktop
+- **Flexible Grid** - CSS Grid and Flexbox for responsive layouts
+- **Touch Targets** - Minimum 44px touch targets for mobile
+- **Viewport Meta** - Proper viewport configuration
+
+### Responsive Patterns
+- **Collapsible Navigation** - Mobile-friendly navigation
+- **Flexible Typography** - Responsive font sizes
+- **Adaptive Images** - Responsive image handling
+- **Touch Interactions** - Mobile-optimized interactions
+
+## Migration Notes
+
+### Recent Changes (July 2024)
+- **Framework Migration** - Successfully migrated from Vite to Next.js 14
+- **Routing Update** - Migrated from React Router to Next.js App Router
+- **Build System** - Resolved critical build issues with new framework
+- **Component Updates** - Updated components to use Next.js patterns
+
+### Benefits of Next.js Migration
+- **Better React Integration** - Native React support without plugin conflicts
+- **Improved Performance** - Built-in optimizations and code splitting
+- **Enhanced Developer Experience** - Better TypeScript support and debugging
+- **Production Ready** - Optimized build process and deployment
+- **File-based Routing** - Simpler and more intuitive routing system
+
+## Development Workflow
+
+### Component Development
+1. **Create Component** - Use shadcn/ui CLI or manual creation
+2. **Add Types** - TypeScript interfaces and props
+3. **Style Component** - Tailwind CSS with design tokens
+4. **Test Component** - Unit tests and accessibility testing
+5. **Document Component** - Storybook or component documentation
+
+### Styling Guidelines
+- **Utility Classes** - Prefer Tailwind utility classes
+- **Component Variants** - Use CVA for component variants
+- **Design Tokens** - Use CSS variables for consistent theming
+- **Responsive Design** - Mobile-first responsive approach
+
+### Code Quality
+- **TypeScript Strict** - Enable strict TypeScript mode
+- **ESLint Rules** - Consistent code style and quality
+- **Prettier Formatting** - Automated code formatting
+- **Component Testing** - Unit tests for all components
+
 # UI Design Specifications
 
 ## Design Philosophy
