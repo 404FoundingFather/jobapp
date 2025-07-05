@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Button } from '../components/ui/button'
 import { UserAvatar } from './user/UserAvatar'
+import { useAuthStore } from '../stores/authStore'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -11,9 +12,21 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   const pathname = usePathname()
+  const { user, isAuthenticated, logout } = useAuthStore()
 
   const isActive = (path: string) => {
     return pathname === path
+  }
+
+  const handleLogout = () => {
+    logout()
+  }
+
+  // Don't show navigation for auth pages
+  const isAuthPage = pathname === '/login' || pathname === '/register'
+
+  if (isAuthPage) {
+    return <>{children}</>
   }
 
   return (
@@ -25,46 +38,70 @@ export default function Layout({ children }: LayoutProps) {
               <Link href="/" className="text-xl font-bold text-foreground">
                 JobApp
               </Link>
-              <div className="hidden md:flex items-center space-x-6">
-                <Link 
-                  href="/" 
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
-                    isActive('/') ? 'text-primary' : 'text-muted-foreground'
-                  }`}
-                >
-                  Dashboard
-                </Link>
-                <Link 
-                  href="/jobs" 
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
-                    isActive('/jobs') ? 'text-primary' : 'text-muted-foreground'
-                  }`}
-                >
-                  Jobs
-                </Link>
-                <Link 
-                  href="/applications" 
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
-                    isActive('/applications') ? 'text-primary' : 'text-muted-foreground'
-                  }`}
-                >
-                  Applications
-                </Link>
-                <Link 
-                  href="/profile" 
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
-                    isActive('/profile') ? 'text-primary' : 'text-muted-foreground'
-                  }`}
-                >
-                  Profile
-                </Link>
-              </div>
+              {isAuthenticated && (
+                <div className="hidden md:flex items-center space-x-6">
+                  <Link 
+                    href="/" 
+                    className={`text-sm font-medium transition-colors hover:text-primary ${
+                      isActive('/') ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                  >
+                    Dashboard
+                  </Link>
+                  <Link 
+                    href="/jobs" 
+                    className={`text-sm font-medium transition-colors hover:text-primary ${
+                      isActive('/jobs') ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                  >
+                    Jobs
+                  </Link>
+                  <Link 
+                    href="/applications" 
+                    className={`text-sm font-medium transition-colors hover:text-primary ${
+                      isActive('/applications') ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                  >
+                    Applications
+                  </Link>
+                  <Link 
+                    href="/profile" 
+                    className={`text-sm font-medium transition-colors hover:text-primary ${
+                      isActive('/profile') ? 'text-primary' : 'text-muted-foreground'
+                    }`}
+                  >
+                    Profile
+                  </Link>
+                </div>
+              )}
             </div>
             <div className="flex items-center space-x-4">
-              <Button variant="outline" size="sm">
-                Help
-              </Button>
-              <UserAvatar userName="John Doe" />
+              {isAuthenticated ? (
+                <>
+                  <Button variant="outline" size="sm">
+                    Help
+                  </Button>
+                  <UserAvatar 
+                    userName={`${user?.first_name || ''} ${user?.last_name || ''}`.trim() || user?.email || 'User'} 
+                  />
+                  <Button variant="ghost" size="sm" onClick={handleLogout}>
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link href="/login">
+                    <Button variant="ghost" size="sm">
+                      Login
+                    </Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button size="sm">
+                      Sign Up
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </nav>
         </div>

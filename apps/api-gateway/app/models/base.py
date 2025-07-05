@@ -5,10 +5,11 @@ Provides common functionality for all database models
 
 from datetime import datetime
 from typing import Any, Dict
+from uuid import UUID
 from sqlalchemy import Column, DateTime, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import DeclarativeBase
-from pydantic import BaseModel as PydanticBaseModel
+from pydantic import BaseModel as PydanticBaseModel, field_validator
 
 
 class Base(DeclarativeBase):
@@ -24,12 +25,13 @@ class TimestampMixin:
 
 class PydanticBase(PydanticBaseModel):
     """Base Pydantic model with common configuration"""
-    
-    class Config:
-        from_attributes = True
-        json_encoders = {
-            datetime: lambda v: v.isoformat() if v else None
+    model_config = {
+        "from_attributes": True,
+        "json_encoders": {
+            datetime: lambda v: v.isoformat() if v else None,
+            UUID: lambda v: str(v) if v else None
         }
+    }
 
 
 class BaseResponse(PydanticBase):
@@ -37,6 +39,11 @@ class BaseResponse(PydanticBase):
     id: str
     created_at: datetime
     updated_at: datetime
+
+    @field_validator('id', mode='before')
+    @classmethod
+    def ensure_id_is_str(cls, v):
+        return str(v) if v is not None else v
 
 
 class BaseCreate(PydanticBase):

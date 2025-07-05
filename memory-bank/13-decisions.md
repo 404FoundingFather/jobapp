@@ -537,4 +537,11 @@ Implemented FastAPI gateway with the following technical choices:
 - Plan for multi-region deployment and data residency requirements
 
 ---
+
+## 2025-07-04
+- **Login endpoint now uses JSON body:** The /login endpoint was updated to accept a Pydantic model from the request body, matching frontend expectations and modern API standards.
+- **Always refresh SQLAlchemy objects after commit:** After committing changes to the database, always call `await db.refresh(obj)` before serializing to ensure all fields are loaded and avoid async context errors.
+- **Use Pydantic field validators for UUID serialization:** To ensure UUIDs are always returned as strings in API responses, use a Pydantic field validator on the id field in BaseResponse.
+- **All models must be imported for SQLAlchemy relationship resolution:** The models/__init__.py file must import all models to ensure SQLAlchemy can resolve relationships and avoid mapper errors.
+
 *This document captures the reasoning behind all major technical decisions and should be consulted when making related choices or considering changes to the system architecture.* 

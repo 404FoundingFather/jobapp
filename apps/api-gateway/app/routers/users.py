@@ -11,6 +11,7 @@ from typing import List
 import bcrypt
 import jwt
 from datetime import datetime, timedelta
+from pydantic import BaseModel, EmailStr
 
 from app.core.database import get_db
 from app.core.config import settings
@@ -118,9 +119,15 @@ async def register_user(user_data: UserCreate, db: AsyncSession = Depends(get_db
     return db_user
 
 
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
 @router.post("/login")
-async def login_user(email: str, password: str, db: AsyncSession = Depends(get_db)):
-    """Login user and return access token"""
+async def login_user(login: LoginRequest, db: AsyncSession = Depends(get_db)):
+    email = login.email
+    password = login.password
     # Find user by email
     result = await db.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
@@ -141,6 +148,7 @@ async def login_user(email: str, password: str, db: AsyncSession = Depends(get_d
     # Update last login
     user.last_login_at = datetime.utcnow()
     await db.commit()
+    await db.refresh(user)
     
     # Create access token
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -151,7 +159,19 @@ async def login_user(email: str, password: str, db: AsyncSession = Depends(get_d
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "user": UserResponse.from_orm(user)
+        "user": UserResponse.model_validate({
+            "id": str(user.id),
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "phone": user.phone,
+            "is_active": user.is_active,
+            "email_verified": user.email_verified,
+            "subscription_tier": user.subscription_tier,
+            "last_login_at": user.last_login_at,
+            "created_at": user.created_at,
+            "updated_at": user.updated_at
+        })
     }
 
 

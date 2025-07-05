@@ -101,12 +101,12 @@ async def legacy_health_check():
     }
 
 # Global exception handler for development
-if settings.DEBUG:
-    @app.exception_handler(Exception)
-    async def global_exception_handler(request: Request, exc: Exception):
-        logger.error(f"Global exception: {exc}", exc_info=True)
-        return {
-            "error": "Internal server error",
-            "detail": str(exc) if settings.DEBUG else "Contact support",
-            "path": str(request.url.path)
-        }
+# if settings.DEBUG:
+#     @app.exception_handler(Exception)
+#     async def global_exception_handler(request: Request, exc: Exception):
+#         logger.error(f"Global exception: {exc}", exc_info=True)
+#         return {
+#             "error": "Internal server error",
+#             "detail": str(exc) if settings.DEBUG else "Contact support",
+#             "path": str(request.url.path)
+#         }

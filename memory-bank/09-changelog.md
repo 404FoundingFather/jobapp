@@ -325,5 +325,13 @@ This changelog documents all notable changes, updates, and milestones in the Job
 - Security and compliance framework
 - Monitoring and observability setup
 
+## 2025-07-04
+- Completed and fully debugged user registration and login flow (FastAPI backend, Next.js frontend).
+- Fixed CORS issues and 422/500 errors on registration and login endpoints.
+- Updated backend to accept JSON for login (Pydantic model), matching frontend expectations.
+- Fixed async SQLAlchemy issues: ensured all models are imported, migrations run on startup, and objects are refreshed after commit.
+- Solved UUID serialization errors by adding Pydantic field validators and using model_config for v2 compatibility.
+- Confirmed JWT authentication and user info returned on login; frontend and backend now fully in sync for auth.
+
 ---
 *This changelog serves as the authoritative record of project evolution and should be updated with every significant milestone or decision.* 

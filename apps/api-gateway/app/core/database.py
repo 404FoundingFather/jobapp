@@ -51,9 +51,15 @@ async def init_db() -> None:
     """Initialize database with tables"""
     try:
         async with engine.begin() as conn:
-            # Create all tables
-            await conn.run_sync(Base.metadata.create_all)
-            logger.info("Database tables created successfully")
+            # Run the migration file instead of create_all
+            migration_file = "migrations/001_initial_schema.sql"
+            try:
+                await run_migration(migration_file)
+                logger.info("Database migration executed successfully")
+            except FileNotFoundError:
+                # Fallback to SQLAlchemy create_all if migration file not found
+                await conn.run_sync(Base.metadata.create_all)
+                logger.info("Database tables created successfully (fallback)")
             
             # Verify pgvector extension
             result = await conn.execute(text("SELECT * FROM pg_extension WHERE extname = 'pgvector'"))
