@@ -61,12 +61,12 @@ async def init_db() -> None:
                 await conn.run_sync(Base.metadata.create_all)
                 logger.info("Database tables created successfully (fallback)")
             
-            # Verify pgvector extension
-            result = await conn.execute(text("SELECT * FROM pg_extension WHERE extname = 'pgvector'"))
+            # Verify vector extension
+            result = await conn.execute(text("SELECT * FROM pg_extension WHERE extname = 'vector'"))
             if result.fetchone():
-                logger.info("pgvector extension is available")
+                logger.info("vector extension is available")
             else:
-                logger.warning("pgvector extension not found - vector search will not work")
+                logger.warning("vector extension not found - vector search will not work")
                 
     except Exception as e:
         logger.error(f"Database initialization failed: {e}")
@@ -105,8 +105,8 @@ async def check_db_health() -> dict:
             """))
             tables = [row[0] for row in result.fetchall()]
             
-            # Check pgvector extension
-            result = await session.execute(text("SELECT * FROM pg_extension WHERE extname = 'pgvector'"))
+            # Check vector extension
+            result = await session.execute(text("SELECT * FROM pg_extension WHERE extname = 'vector'"))
             pgvector_available = result.fetchone() is not None
             
             return {
