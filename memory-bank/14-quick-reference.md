@@ -2,9 +2,9 @@
 
 ## Project Overview
 **Project Name:** Job Application Assistance System  
-**Current Status:** ✅ **FRONTEND WORKING** - Next.js migration complete  
-**Last Updated:** July 2024  
-**Phase:** Sprint 0 Complete - Foundation Ready
+**Current Status:** 🔄 **SPRINT 1 IN PROGRESS** - User Authentication Complete  
+**Last Updated:** July 2025  
+**Phase:** Sprint 1 - User Management & Authentication (30% Complete)
 
 ## Key Technologies
 - **Frontend:** Next.js 14.2.30 + TypeScript + Tailwind CSS
@@ -196,6 +196,100 @@ docker exec -it jobapp-postgres-1 psql -U postgres -d jobapp
 ```
 
 ## API Endpoints
+
+### Authentication & User Management
+```http
+# User Registration
+POST /api/v1/users/register
+Content-Type: application/json
+{
+  "email": "user@example.com",
+  "password": "password123",
+  "first_name": "John",
+  "last_name": "Doe"
+}
+
+# User Login
+POST /api/v1/users/login
+Content-Type: application/json
+{
+  "email": "user@example.com",
+  "password": "password123"
+}
+
+# Get Current User
+GET /api/v1/users/me
+Authorization: Bearer <jwt_token>
+
+# Update User
+PUT /api/v1/users/me
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+{
+  "first_name": "John",
+  "last_name": "Smith"
+}
+```
+
+### User Profile Management
+```http
+# Get User Profile
+GET /api/v1/users/me/profile
+Authorization: Bearer <jwt_token>
+
+# Create User Profile
+POST /api/v1/users/me/profile
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+{
+  "resume_text": "Experienced software engineer...",
+  "linkedin_url": "https://linkedin.com/in/johndoe",
+  "location_city": "San Francisco",
+  "years_experience": 5
+}
+
+# Update User Profile
+PUT /api/v1/users/me/profile
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+{
+  "current_title": "Senior Software Engineer"
+}
+```
+
+### User Skills & Experience
+```http
+# Get User Skills
+GET /api/v1/users/me/skills
+Authorization: Bearer <jwt_token>
+
+# Add User Skill
+POST /api/v1/users/me/skills
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+{
+  "skill_name": "Python",
+  "skill_category": "technical",
+  "proficiency_level": "advanced",
+  "years_experience": 3.5
+}
+
+# Get User Experience
+GET /api/v1/users/me/experiences
+Authorization: Bearer <jwt_token>
+
+# Add User Experience
+POST /api/v1/users/me/experiences
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+{
+  "company_name": "Tech Corp",
+  "job_title": "Software Engineer",
+  "start_date": "2022-01-01",
+  "is_current": true,
+  "description": "Developed web applications..."
+}
+```
 
 ### Health Checks
 - `GET /health` - Basic health check
